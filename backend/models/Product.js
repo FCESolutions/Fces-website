@@ -31,7 +31,10 @@ const productSchema = new Schema({
   subcategory_name: { type: String },
   subsubcategory_id: { type: Schema.Types.ObjectId, ref: 'Subsubcategory' },
   description: [descriptionItemSchema],
-  specifications: { type: Map, of: String }, // Flexible specs structure
+  specifications: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   price: { type: String },
   main_image_url: { type: String },
   product_image_url: { type: String },

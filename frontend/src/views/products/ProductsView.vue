@@ -4,6 +4,7 @@
       <CategorySidebar :categories="sideBar" />
       
       <div class="productsView-container">
+        <!-- Header (always visible) -->
         <div class="productsView-header">
           <!-- Show category name only when NOT in a subcategory -->
           <h2 v-if="!route.params.subcategoryId">{{ currentCategoryName }}</h2>
@@ -38,99 +39,120 @@
               </span>
             </template>
           </div>
+        </div>        
+        
+        <!-- Product detail view - render first if productId exists -->
+        <div v-if="route.params.productId">
+          <div v-if="productDetails">
+            <ProductDetailsCard 
+            v-if="productDetails"
+            :productId="route.params.productId"           
+            :product="productDetails || {}"
+            />
+          </div>
+          <div v-else class="loading">
+            <Icon icon="svg-spinners:270-ring" class="loading-icon" />
+            Loading products...
+          </div>
         </div>
         
-        <!-- Top level categories -->
-        <div v-if="sideBar.length > 0 && !route.params.categoryId">
-          <p v-if="categories.length === 0" class="not-available">
-            No categories available.
-          </p>
-          <div v-else class="categories-grid">
-            <CategoryCard 
-              v-for="cat in categories" 
-              :key="cat._id" 
-              :category="cat" 
-              @navigate="goToCategory"
-            />
-          </div>
-        </div>
 
-        <!-- Category level (shows subcategories + category-level products) -->
-        <div v-else-if="route.params.categoryId && !route.params.subcategoryId">
-          <div v-if="subcategories.length > 0" class="categories-grid">
-            <SubCategoryCard 
-              v-for="subcat in subcategories" 
-              :key="subcat._id" 
-              :subcategory="subcat" 
-              @navigate="goToSubcategory"
-            />
-          </div>
-          
-          <!-- Show category-level products if they exist -->
-          <div v-if="subcategoryLevelProducts.length > 0">
-            <h3 class="products-section-title">Products in this category</h3>
-            <div class="products-grid">
-              <ProductCard 
-                v-for="product in subcategoryLevelProducts" 
-                :key="product._id" 
-                :product="product" 
+        <!-- Category/Subcategory/Product View -->
+        <div v-else>
+          <!-- Top level categories -->
+          <div v-if="sideBar.length > 0 && !route.params.categoryId">
+            <p v-if="categories.length === 0" class="not-available">
+              No categories available.
+            </p>
+            <div v-else class="categories-grid">
+              <CategoryCard 
+                v-for="cat in categories" 
+                :key="cat._id" 
+                :category="cat" 
+                @navigate="goToCategory"
               />
             </div>
           </div>
 
-          <p 
-            v-if="subcategories.length === 0 && subcategoryLevelProducts.length === 0" 
-            class="not-available"
-          >
-            No subcategories available in this category.
-          </p>
-        </div>
-
-<!-- Subcategory level (shows subsubcategories + subcategory-level products) -->
-        <div v-else-if="route.params.categoryId && route.params.subcategoryId && !route.params.subsubcategoryId">
-          <div v-if="subsubcategories.length > 0" class="categories-grid">
-            <SubSubCategoryCard 
-              v-for="subsubcat in subsubcategories" 
-              :key="subsubcat._id" 
-              :subsubcategory="subsubcat" 
-              @navigate="goToSubSubcategory"
-            />
-          </div>
-          
-          <!-- Show subcategory-level products if they exist -->
-          <div v-if="subsubcategoryLevelProducts.length > 0">
-            <h3 class="products-section-title">Products in this subcategory</h3>
-            <div class="products-grid">
-              <ProductCard 
-                v-for="product in subsubcategoryLevelProducts" 
-                :key="product._id" 
-                :product="product" 
+          <!-- Category level (shows subcategories + category-level products) -->
+          <div v-else-if="route.params.categoryId && !route.params.subcategoryId">
+            <div v-if="subcategories.length > 0" class="categories-grid">
+              <SubCategoryCard 
+                v-for="subcat in subcategories" 
+                :key="subcat._id" 
+                :subcategory="subcat" 
+                @navigate="goToSubcategory"
               />
             </div>
+            
+            <!-- Show category-level products if they exist -->
+            <div v-if="subcategoryLevelProducts.length > 0">
+              <h3 class="products-section-title">Products in this category</h3>
+              <div class="products-grid">
+                <ProductCard 
+                  v-for="product in subcategoryLevelProducts" 
+                  :key="product._id" 
+                  :product="product" 
+                  @navigate="goToProduct"
+                />
+              </div>
+            </div>
+
+            <p 
+              v-if="subcategories.length === 0 && subcategoryLevelProducts.length === 0" 
+              class="not-available"
+            >
+              No subcategories available in this category.
+            </p>
           </div>
 
-          <p 
-            v-if="subsubcategories.length === 0 && subsubcategoryLevelProducts.length === 0" 
-            class="not-available"
-          >
-            No further subcategories or products available in this subcategory.
-          </p>
-        </div>
+          <!-- Subcategory level (shows subsubcategories + subcategory-level products) -->
+          <div v-else-if="route.params.categoryId && route.params.subcategoryId && !route.params.subsubcategoryId">
+            <div v-if="subsubcategories.length > 0" class="categories-grid">
+              <SubSubCategoryCard 
+                v-for="subsubcat in subsubcategories" 
+                :key="subsubcat._id" 
+                :subsubcategory="subsubcat" 
+                @navigate="goToSubSubcategory"
+              />
+            </div>
+            
+            <!-- Show subcategory-level products if they exist -->
+            <div v-if="subsubcategoryLevelProducts.length > 0">
+              <h3 class="products-section-title">Products in this subcategory</h3>
+              <div class="products-grid">
+                <ProductCard 
+                  v-for="product in subsubcategoryLevelProducts" 
+                  :key="product._id" 
+                  :product="product" 
+                  @navigate="goToProduct"
+                />
+              </div>
+            </div>
 
-        <!-- Subsubcategory level (shows only products) -->
-        <div v-else-if="route.params.subsubcategoryId">
-          <div v-if="products.length > 0" class="products-grid">
-            <ProductCard 
-              v-for="product in products" 
-              :key="product._id" 
-              :product="product" 
-            />
+            <p 
+              v-if="subsubcategories.length === 0 && subsubcategoryLevelProducts.length === 0" 
+              class="not-available"
+            >
+              No further subcategories or products available in this subcategory.
+            </p>
           </div>
-          <p v-else class="not-available">
-            No products available in this subcategory.
-          </p>
-        </div>
 
+          <!-- Subsubcategory level (shows only products) -->
+          <div v-else-if="route.params.subsubcategoryId">
+            <div v-if="products.length > 0" class="products-grid">
+              <ProductCard 
+                v-for="product in products" 
+                :key="product._id" 
+                :product="product" 
+                @navigate="goToProduct"
+              />
+            </div>
+            <p v-else class="not-available">
+              No products available in this subcategory.
+            </p>
+          </div>
+        </div>
         <div v-if="loading" class="loading">
           <Icon icon="svg-spinners:270-ring" class="loading-icon" />
           Loading...
@@ -153,10 +175,6 @@ import SubSubCategoryCard from '@/components/products/SubSubCategoryCard.vue'
 import ProductCard from '@/components/products/ProductCard.vue'
 import ProductDetailsCard from '@/components/products/ProductDetailsCard.vue'
 
-
-
-//import ProductCard from '@/components/layout/ProductCard.vue'
-
 const route = useRoute()
 const router = useRouter()
 const categories = ref([])
@@ -166,6 +184,7 @@ const sideBar = ref([])
 const products = ref([])
 const subcategoryLevelProducts = ref([])
 const subsubcategoryLevelProducts = ref([])
+const productDetails = ref({})
 const loading = ref(false)
 const productStore = useProductStore()
 
@@ -233,6 +252,13 @@ const goToSubSubcategory = (subsubcategoryId) => {
   })
 }
 
+const goToProduct = (productId) => {
+  router.push({
+    name: 'ProductDetails',
+    params: { productId }
+  })
+}
+
 
 // Fetch data
 const fetchProductsSidBar = async () => {
@@ -251,7 +277,6 @@ const fetchCategories = async () => {
   try {
     const response = await api.getCategories()
     categories.value = response.data
-    console.log('categories:', response.data)
   } catch (error) {
     console.error('Error fetching categories:', error)
   }
@@ -307,6 +332,21 @@ const fetchProducts = async () => {
   }
 }
 
+const fetchProductDetails = async (productId) => {
+    if (!route.params.productId) return
+
+    loading.value = true
+    try {
+      const response = await api.getProductDetails(productId)
+      productDetails.value = response.data
+      console.log('productDetails:', productDetails.value)
+    } catch (error) {
+      console.error('Error fetching product details:', error)
+    } finally {
+      loading.value = false
+    }
+}
+
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -324,6 +364,9 @@ const fetchData = async () => {
         }
       }
     }
+    if (route.params.productId) {
+      await fetchProductDetails(route.params.productId)
+    }
   } catch (error) {
     console.error('Error fetching data:', error);
   } finally {
@@ -340,7 +383,8 @@ watch(
   () => ({
     categoryId: route.params.categoryId,
     subcategoryId: route.params.subcategoryId,
-    subsubcategoryId: route.params.subsubcategoryId
+    subsubcategoryId: route.params.subsubcategoryId,
+    productId: route.params.productId
   }),
   async (newParams, oldParams) => {
     // Skip initial identical run
@@ -368,6 +412,11 @@ watch(
       // Subsubcategory level changed
       if (newParams.subsubcategoryId !== oldParams?.subsubcategoryId) {
         await fetchProducts();
+      }
+
+      if (newParams.productId !== oldParams?.productId) {
+        productDetails.value = null; // optional: clear old product
+        await fetchProductDetails(newParams.productId);
       }
     } catch (error) {
       console.error('Error during route change:', error);

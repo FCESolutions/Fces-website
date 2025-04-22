@@ -286,7 +286,7 @@
 
 .category-sidebar {
   width: 250px;
-  max-height: calc(100vh - 150px);
+  max-height: calc(100vh - 170px);
   position: absolute;
   top: 40px;
   left: 0;

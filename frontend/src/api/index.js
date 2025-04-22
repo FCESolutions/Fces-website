@@ -17,6 +17,9 @@ export default {
   getProducts(categoryId, subcategoryId, subsubcategoryId) {
     return api.get(`/products/category/${categoryId}/subcategory/${subcategoryId}/subsubcategory/${subsubcategoryId}`)
   },
+  getProductDetails(productId) {
+    return api.get(`/products/${productId}`)
+  },
   getProductsSideBar() {
     return api.get('/categories/SideBar')
   }
