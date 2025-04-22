@@ -1,5 +1,5 @@
 <template>
-  <div class="category-card">
+  <div class="category-card" @click=handleClick>
     <img 
       :src="category.category_image_url" 
       :alt="category.category_name"
@@ -7,23 +7,30 @@
     >
     <div class="category-content">
       <h3>{{ category.category_name }}</h3>
-      <router-link 
-        :to="`/categories/${category._id}`"
-        class="view-products-btn"
-      >
-        View Products
-      </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { defineEmits } from 'vue'
+import { useProductStore } from '@/stores/productStore'
+
+// Access the `category` prop directly
+const props = defineProps({
   category: {
     type: Object,
     required: true
   }
 })
+
+const productStore = useProductStore()
+const emit = defineEmits(['navigate'])
+
+const handleClick = () => {
+  // Use `props.category` to access the passed prop
+  emit('navigate', props.category._id)
+  productStore.setActiveCategory(props.category)
+}
 </script>
 
 <style scoped>
@@ -41,32 +48,18 @@ defineProps({
 
 .category-image {
   width: 100%;
-  height: 180px;
+  height: 290px;
   object-fit: cover;
 }
 
 .category-content {
   padding: 1rem;
+  text-align: center;
 }
 
 h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
   color: #2d3748;
-}
-
-.view-products-btn {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: #4299e1;
-  color: white;
-  text-decoration: none;
-  border-radius: 0.25rem;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-}
-
-.view-products-btn:hover {
-  background-color: #3182ce;
 }
 </style>

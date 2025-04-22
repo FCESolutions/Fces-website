@@ -16,6 +16,37 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+// Get product by cat id or sub id or subsub id
+exports.getProductsByLevel = async (req, res) => {
+  try {
+    const { categoryId, subcategoryId, subsubcategoryId } = req.params;
+    let query = {};
+
+    if (subsubcategoryId && subsubcategoryId !== 'null') {
+      query.subsubcategory_id = subsubcategoryId;
+    } else if (subcategoryId && subcategoryId !== 'null') {  // ✅ fixed here
+      query = {
+        subcategory_id: subcategoryId,
+        $or: [
+          { subsubcategory_id: null },
+          { subsubcategory_id: { $exists: false } }
+        ]
+      };
+    } else {
+      // If no subcategory or subsubcategory selected, return nothing
+      return res.status(200).json([]);
+    }
+
+    const products = await Product.find(query);
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
+
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {

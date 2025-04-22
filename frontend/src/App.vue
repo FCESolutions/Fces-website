@@ -9,13 +9,15 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import TheNavbar from './components/layout/TheNavbar.vue'
+import TheNavbar from './components/TheNavbar.vue'
+
 
 @Options({
   components: {
     TheNavbar
-  },
+  }
 })
+
 export default class App extends Vue {}
 </script>
 
@@ -24,6 +26,6 @@ export default class App extends Vue {}
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin-top: 30px;
+  padding-top: 50px; 
 }
 </style>

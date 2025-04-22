@@ -4,6 +4,11 @@
 **/.env.local
 **/.env.*.local
 **/dist/           # Ignores ALL dist folders (Vue.js build output)
+# Environment files
+.env
+
+# Dependencies
+node_modules/
 
 # --- Logs ---
 **/npm-debug.log*

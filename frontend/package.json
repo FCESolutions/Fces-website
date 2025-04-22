@@ -7,8 +7,10 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@iconify/vue": "^4.3.0",
     "axios": "^1.8.4",
     "core-js": "^3.8.3",
+    "path": "^0.12.7",
     "pinia": "^3.0.2",
     "vue": "^3.2.13",
     "vue-class-component": "^8.0.0-0",

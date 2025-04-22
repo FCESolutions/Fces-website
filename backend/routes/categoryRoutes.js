@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
     getAllCategories,
+    getAllCategoriesWithSubcategories,
     getCategoryById,
     createCategory,
     updateCategory,
@@ -10,6 +11,9 @@ const {
 
 // GET all categories
 router.get('/', getAllCategories);
+
+// GET categories with subcategories and subsubcategories
+router.get('/SideBar', getAllCategoriesWithSubcategories);
 
 // GET single category
 router.get('/:id', getCategoryById);

@@ -1,5 +1,6 @@
 const Subcategory = require('../models/Subcategory');
 const Category = require('../models/Category');
+const Product = require('../models/Product');
 
 // Get all subcategories
 exports.getAllSubcategories = async (req, res) => {
@@ -11,11 +12,27 @@ exports.getAllSubcategories = async (req, res) => {
   }
 };
 
-// Get subcategories by category ID
+// Get subcategories by category ID with product if there is any
 exports.getSubcategoriesByCategory = async (req, res) => {
   try {
-    const subcategories = await Subcategory.find({ category_id: req.params.categoryId });
-    res.json(subcategories);
+    const categoryId = req.params.categoryId;
+
+    // 1. Get subcategories
+    const subcategories = await Subcategory.find({ category_id: categoryId });
+
+    // 2. Get products directly under category (no subcategory or subsubcategory)
+    const productsAtCategoryLevel = await Product.find({
+      category_id: req.params.categoryId,
+      $and: [
+        { $or: [{ subcategory_id: null }, { subcategory_id: { $exists: false } }] },
+        { $or: [{ subsubcategory_id: null }, { subsubcategory_id: { $exists: false } }] }
+      ]
+    })
+
+    res.json({
+      subcategories,
+      products: productsAtCategoryLevel
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
