@@ -9,8 +9,8 @@ export const useProductStore = defineStore('category', {
   }),
 
   actions: {
-    setActiveCategory(category) {
-      this.activeCategory = category._id
+    setActiveCategory(categoryId) {
+      this.activeCategory = categoryId
       this.activeSubcategory = null
       this.activeSubsubcategory = null
     },
@@ -18,16 +18,16 @@ export const useProductStore = defineStore('category', {
       this.activeCategory = null
     },
 
-    setActiveSubcategory(subcategory) {
-      this.activeSubcategory = subcategory._id
+    setActiveSubcategory(subcategoryId) {
+      this.activeSubcategory = subcategoryId
       this.activeSubsubcategory = null
     },
     resetActiveSubcategory() {
       this.activeSubcategory = null
     },
 
-    setActiveSubsubcategory(subsubcategory) {
-      this.activeSubsubcategory = subsubcategory._id
+    setActiveSubsubcategory(subsubcategoryId) {
+      this.activeSubsubcategory = subsubcategoryId
     },
     resetActiveSubsubcategory() {
       this.activeSubsubcategory = null

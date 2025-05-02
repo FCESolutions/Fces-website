@@ -4,6 +4,7 @@ const {
     getAllCategories,
     getAllCategoriesWithSubcategories,
     getCategoryById,
+    searchItem,
     createCategory,
     updateCategory,
     deleteCategory
@@ -17,6 +18,9 @@ router.get('/SideBar', getAllCategoriesWithSubcategories);
 
 // GET single category
 router.get('/:id', getCategoryById);
+
+// Search bar
+router.get('/search', searchItem);
 
 // POST new category
 router.post('/', createCategory);

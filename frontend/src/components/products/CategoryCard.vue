@@ -29,7 +29,7 @@ const emit = defineEmits(['navigate'])
 const handleClick = () => {
   // Use `props.category` to access the passed prop
   emit('navigate', props.category._id)
-  productStore.setActiveCategory(props.category)
+  productStore.setActiveCategory(props.category._id)
 }
 </script>
 

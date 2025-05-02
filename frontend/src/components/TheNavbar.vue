@@ -7,8 +7,9 @@
 
     <div class="nav-links">
       <router-link :to="{ name: 'Home' }">Acceuil</router-link>
-      <router-link :to="{ name: 'Products' }">Produits</router-link>
-      <router-link :to="{ name: 'Services' }">Services</router-link>
+      <router-link :to="{ name: 'Products' }">Nos Produits</router-link>
+      <router-link :to="{ name: 'Services' }">Nos Services</router-link>
+      <router-link :to="{ name: 'Contact' }">Contactez-nous</router-link>
     </div>
   </nav>
 </template>

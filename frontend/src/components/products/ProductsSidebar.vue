@@ -91,21 +91,23 @@
                       subsubcategoryId: subsub._id
                     }
                   }"
-                  class="nav-item"
                   custom
-                  v-slot="{ navigate, isActive }"
+                  v-slot="{ navigate, isActive, isExactActive }"
                 >
-                  <div 
+                  <div
                     @click="(e) => {
                       navigate(e);
-                      productStore.setActiveSubsubcategory(subsub);
-                      handleSubcategoryClick(sub);
-                    }" 
-                    :class="{ 
-                      'active': isActive,
-                      'nav-item': true,
-                      'nav-link': true  // Make sure this class is applied
+                      productStore.setActiveSubsubcategory(subsub._id);
                     }"
+                    :class="[
+                      'nav-item',
+                      'nav-link',
+                      { 
+                        'active': isActive,
+                        'router-link-active': isActive,
+                        'router-link-exact-active': isExactActive 
+                      }
+                    ]"
                   >
                     {{ subsub.subsubcategory_name }}
                   </div>
@@ -426,6 +428,8 @@
 .nav-item.has-active-child > .nav-link {
   font-weight: 500;
   color: #3182ce;
+  background: #e6f6ff;
+  border-left: 3px solid #3182ce;
 }
 
 .nav-item.has-active-child > .sub-level {
@@ -444,5 +448,21 @@
   padding: 0 4px;
   min-width: 20px; /* Ensure consistent spacing */
   text-align: center;
+}
+
+/* Add these styles to your existing CSS */
+.sub-level .sub-level .nav-item.active,
+.sub-level .sub-level .nav-item.router-link-active,
+.sub-level .sub-level .nav-item.router-link-exact-active {
+  background: #ebf8ff;
+  color: #3182ce;
+  font-weight: 500;
+  border-left: 3px solid #3182ce;
+}
+
+/* Make sure this exists for proper hover states */
+.sub-level .sub-level .nav-link:hover {
+  background: #edf2f7;
+  color: #2b6cb0;
 }
 </style>

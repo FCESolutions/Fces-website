@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import ContactView from '@/views/ContactView.vue'
 import ServicesView from '@/views/ServicesView.vue'
-import ProductsView from '@/views/products/ProductsView.vue'
+import ProductsView from '@/views/ProductsView.vue'
+import OrderView from '@/views/OrderView.vue'
 const routes = [
   {
     path: '/',
@@ -34,15 +36,30 @@ const routes = [
     component: ProductsView
   },
   {
+    path: '/products/order',
+    name: 'Order',
+    component: OrderView,
+    meta: { requiresCart: true }
+  },
+  {
     path: '/',
     name: 'Services',
     component: ServicesView
+  },
+  {
+    path: '/',
+    name: 'Contact',
+    component: ContactView
   },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    // Always scroll to top on route change
+    return { top: 0 }
+  }
 })
 
 export default router

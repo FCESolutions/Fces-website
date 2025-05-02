@@ -6,43 +6,71 @@
       <div class="productsView-container">
         <!-- Header (always visible) -->
         <div class="productsView-header">
-          <!-- Show category name only when NOT in a subcategory -->
-          <h2 v-if="!route.params.subcategoryId">{{ currentCategoryName }}</h2>
-          
-          <!-- Show breadcrumb path when in subcategory or deeper -->
-          <div v-if="breadcrumbPath.length > 0" class="breadcrumb">
-            <!-- Start with category name as first breadcrumb item -->
-            <router-link 
-              :to="{ name: 'ProductsByCategory', params: { categoryId: route.params.categoryId } }" 
-              class="breadcrumb-item"
-            >
+          <div class="title-section">
+            <!-- Show category name only when NOT in a subcategory -->
+            <h2 v-if="!route.params.subcategoryId && !route.params.subsubcategoryId && !route.params.productId">
               {{ currentCategoryName }}
-            </router-link>
+            </h2>
             
-            <!-- Add separator and subcategory -->
-            <Icon 
-              icon="lucide:chevron-right" 
-              class="breadcrumb-separator" 
-            />
-            <span class="breadcrumb-item">
-              {{ breadcrumbPath[0].name }}
-            </span>
-            
-            <!-- Add subsubcategory if it exists -->
-            <template v-if="breadcrumbPath.length > 1">
-              <Icon 
-                icon="lucide:chevron-right" 
-                class="breadcrumb-separator" 
-              />
-              <span class="breadcrumb-item">
-                {{ breadcrumbPath[1].name }}
-              </span>
-            </template>
+            <!-- Show breadcrumb path when in subcategory or deeper -->
+            <div v-if="breadcrumbPath.length > 0" class="breadcrumb">
+              <router-link
+                :to="{ name: 'ProductsByCategory', params: { categoryId: categoryIdFromPath } }"
+                class="breadcrumb-item"
+              >
+                {{ currentCategoryName }}
+              </router-link>
+
+              <template v-for="(crumb, index) in breadcrumbPath" :key="index">
+                <Icon icon="lucide:chevron-right" class="breadcrumb-separator" />
+                
+                <router-link
+                  v-if="index === 0"
+                  :to="{ 
+                    name: 'ProductsBySubcategory', 
+                    params: { 
+                      categoryId: categoryIdFromPath, 
+                      subcategoryId: crumb.id 
+                    } 
+                  }"
+                  class="breadcrumb-item"
+                >
+                  {{ crumb.name }}
+                </router-link>
+
+                <router-link
+                  v-else-if="index === 1"
+                  :to="{ 
+                    name: 'ProductsBySubsubcategory', 
+                    params: { 
+                      categoryId: categoryIdFromPath, 
+                      subcategoryId: breadcrumbPath[0].id, 
+                      subsubcategoryId: crumb.id 
+                    } 
+                  }"
+                  class="breadcrumb-item"
+                >
+                  {{ crumb.name }}
+                </router-link>
+              </template>
+            </div>
           </div>
-        </div>        
+
+          <div class="header-search-container">
+            <SearchBar
+              :allCategories="sideBar"
+              :allSubcategories="allSubcategories"
+              :allSubsubcategories="allSubsubcategories"
+              :allProducts="allProducts" 
+              @navigate-state="handleNavigation"  
+              @search-state="handleSearchState"
+            />
+          </div>
+        </div>  
         
         <!-- Product detail view - render first if productId exists -->
-        <div v-if="route.params.productId">
+        <div v-if="route.params.productId">  
+            <ReturnButton />                 
           <div v-if="productDetails">
             <ProductDetailsCard 
             v-if="productDetails"
@@ -55,7 +83,7 @@
             Loading products...
           </div>
         </div>
-        
+          
 
         <!-- Category/Subcategory/Product View -->
         <div v-else>
@@ -63,7 +91,7 @@
           <div v-if="sideBar.length > 0 && !route.params.categoryId">
             <p v-if="categories.length === 0" class="not-available">
               No categories available.
-            </p>
+            </p>            
             <div v-else class="categories-grid">
               <CategoryCard 
                 v-for="cat in categories" 
@@ -75,7 +103,8 @@
           </div>
 
           <!-- Category level (shows subcategories + category-level products) -->
-          <div v-else-if="route.params.categoryId && !route.params.subcategoryId">
+          <div v-else-if="route.params.categoryId && !route.params.subcategoryId"> 
+            <ReturnButton />
             <div v-if="subcategories.length > 0" class="categories-grid">
               <SubCategoryCard 
                 v-for="subcat in subcategories" 
@@ -87,7 +116,6 @@
             
             <!-- Show category-level products if they exist -->
             <div v-if="subcategoryLevelProducts.length > 0">
-              <h3 class="products-section-title">Products in this category</h3>
               <div class="products-grid">
                 <ProductCard 
                   v-for="product in subcategoryLevelProducts" 
@@ -108,6 +136,7 @@
 
           <!-- Subcategory level (shows subsubcategories + subcategory-level products) -->
           <div v-else-if="route.params.categoryId && route.params.subcategoryId && !route.params.subsubcategoryId">
+            <ReturnButton />
             <div v-if="subsubcategories.length > 0" class="categories-grid">
               <SubSubCategoryCard 
                 v-for="subsubcat in subsubcategories" 
@@ -119,7 +148,6 @@
             
             <!-- Show subcategory-level products if they exist -->
             <div v-if="subsubcategoryLevelProducts.length > 0">
-              <h3 class="products-section-title">Products in this subcategory</h3>
               <div class="products-grid">
                 <ProductCard 
                   v-for="product in subsubcategoryLevelProducts" 
@@ -139,7 +167,8 @@
           </div>
 
           <!-- Subsubcategory level (shows only products) -->
-          <div v-else-if="route.params.subsubcategoryId">
+          <div v-else-if="route.params.subsubcategoryId">   
+            <ReturnButton /> 
             <div v-if="products.length > 0" class="products-grid">
               <ProductCard 
                 v-for="product in products" 
@@ -153,17 +182,19 @@
             </p>
           </div>
         </div>
+        
         <div v-if="loading" class="loading">
           <Icon icon="svg-spinners:270-ring" class="loading-icon" />
           Loading...
         </div>
       </div>
     </div>
+    <FloatingCart />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import api from '@/api'
@@ -174,6 +205,9 @@ import SubCategoryCard from '@/components/products/SubCategoryCard.vue'
 import SubSubCategoryCard from '@/components/products/SubSubCategoryCard.vue'
 import ProductCard from '@/components/products/ProductCard.vue'
 import ProductDetailsCard from '@/components/products/ProductDetailsCard.vue'
+import ReturnButton from '@/components/ReturnButton.vue'
+import SearchBar from '@/components/products/SearchBar.vue'
+import FloatingCart from '@/components/products/FloatingCart.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -187,45 +221,133 @@ const subsubcategoryLevelProducts = ref([])
 const productDetails = ref({})
 const loading = ref(false)
 const productStore = useProductStore()
+const allProducts = ref([])
+
+const isSearching = ref(false)
+const searchResults = ref([])
 
 // Current selection names
 const currentCategoryName = computed(() => {
-  if (!route.params.categoryId) return 'All Categories'
-  const category = sideBar.value.find(c => c._id === route.params.categoryId)
-  return category?.category_name || 'Selected Category'
+  // If no categoryId or productId, show 'All Categories'
+  if (!route.params.categoryId && !route.params.productId) return 'All Categories';
+
+  // If we are on the product details page, extract the category from the 'from' query (path)
+  if (route.params.productId) {
+    const fromPathParts = route.query.from ? route.query.from.split('/') : [];
+    const categoryIndex = fromPathParts.indexOf('category');
+    if (categoryIndex !== -1) {
+      const categoryIdFromPath = fromPathParts[categoryIndex + 1];
+      const category = sideBar.value.find(c => c._id === categoryIdFromPath);
+      return category?.category_name || 'Selected Category';
+    }
+  }
+
+  // For other views (like category/subcategory), find the category based on the categoryId
+  const category = sideBar.value.find(c => c._id === route.params.categoryId);
+  return category?.category_name || 'Selected Category';
+});
+
+
+const fromPathParts = computed(() => {
+  const from = route.query.from || router.currentRoute.value.fullPath
+  return from.split('/').filter(Boolean)
+})
+
+const categoryIdFromPath = computed(() => {
+  const parts = fromPathParts.value
+  const index = parts.indexOf('category')
+  return index !== -1 ? parts[index + 1] : null
+})
+
+const subcategoryIdFromPath = computed(() => {
+  const parts = fromPathParts.value
+  const index = parts.indexOf('subcategory')
+  return index !== -1 ? parts[index + 1] : null
+})
+
+const subsubcategoryIdFromPath = computed(() => {
+  const parts = fromPathParts.value
+  const index = parts.indexOf('subsubcategory')
+  return index !== -1 ? parts[index + 1] : null
 })
 
 const breadcrumbPath = computed(() => {
   const path = []
-  
-  if (route.params.subcategoryId) {
-    const category = sideBar.value.find(c => c._id === route.params.categoryId)
-    if (category) {
-      const subcategory = category.subcategories?.find(s => s._id === route.params.subcategoryId)
-      if (subcategory) {
-        path.push({ 
-          name: subcategory.subcategory_name,
-          id: subcategory._id
-        })
-        
-        if (route.params.subsubcategoryId) {
-          const subsubcategory = subcategory.subsubcategories?.find(
-            ss => ss._id === route.params.subsubcategoryId
-          )
-          if (subsubcategory) {
-            path.push({ 
-              name: subsubcategory.subsubcategory_name,
-              id: subsubcategory._id
-            })
-          }
+  const category = sideBar.value.find(c => c._id === categoryIdFromPath.value)
+
+  if (!category) return path // Return an empty path if no category found
+
+  if (subcategoryIdFromPath.value) {
+    const subcategory = category.subcategories?.find(s => s._id === subcategoryIdFromPath.value)
+    if (subcategory) {
+      path.push({ name: subcategory.subcategory_name, id: subcategory._id })
+
+      if (subsubcategoryIdFromPath.value) {
+        const subsubcategory = subcategory.subsubcategories?.find(ss => ss._id === subsubcategoryIdFromPath.value)
+        if (subsubcategory) {
+          path.push({ name: subsubcategory.subsubcategory_name, id: subsubcategory._id })
         }
       }
     }
   }
-  
+
   return path
 })
 
+// Change the search-state handler to:
+const handleSearchState = ({ isSearching: active, results }) => {
+  // Only update if the state actually changed
+  if (active !== isSearching.value || JSON.stringify(results) !== JSON.stringify(searchResults.value)) {
+    isSearching.value = active
+    searchResults.value = results
+    
+    // If not searching, ensure we clear the results after a delay
+    if (!active) {
+      setTimeout(() => {
+        searchResults.value = []
+      }, 300)
+    }
+  }
+}
+
+const cardComponentMap = {
+  category: 'CategoryCard',
+  subcategory: 'SubCategoryCard',
+  subsubcategory: 'SubSubCategoryCard',
+  product: 'ProductCard'
+}
+
+function getCardComponent(type) {
+  return cardComponentMap[type] || null
+}
+
+// Replace handleSearchNavigation with:
+const handleNavigation = (payload) => {
+  
+  // Force a small delay to ensure Vue processes the state change
+  nextTick(() => {
+    switch(payload.type) {
+      case 'category':
+        goToCategory(payload.data._id);
+        break;
+      case 'subcategory':
+        goToSubcategory(payload.data._id);
+        break;
+      case 'subsubcategory':
+        goToSubSubcategory(payload.data._id);
+        break;
+      case 'product':
+        goToProduct(payload.data._id);
+        break;
+    }
+  });
+
+  // Clear search after navigation completes
+  setTimeout(() => {
+    isSearching.value = false
+    searchResults.value = []
+  }, 100)
+}
 
 const goToCategory = (categoryId) => {
   router.push({ name: 'ProductsByCategory', params: { categoryId } })
@@ -255,12 +377,13 @@ const goToSubSubcategory = (subsubcategoryId) => {
 const goToProduct = (productId) => {
   router.push({
     name: 'ProductDetails',
-    params: { productId }
+    params: { productId },
+    query: { from: router.currentRoute.value.fullPath }
   })
 }
 
 
-// Fetch data
+// Fetch cats with its subcats and its subsubcats for sidebar
 const fetchProductsSidBar = async () => {
   try {
     loading.value = true
@@ -273,6 +396,7 @@ const fetchProductsSidBar = async () => {
   }
 }
 
+// Fetch all categories
 const fetchCategories = async () => {
   try {
     const response = await api.getCategories()
@@ -282,6 +406,7 @@ const fetchCategories = async () => {
   }
 }
 
+// Fetch all category subcategories
 const fetchSubCategories = async () => {
   if (!route.params.categoryId) return
   try {
@@ -296,6 +421,7 @@ const fetchSubCategories = async () => {
   }
 }
 
+// Fetch all subcategory subsubcategories
 const fetchSubSubCategories = async () => {
   if (!route.params.categoryId || !route.params.subcategoryId) return
   try {
@@ -310,6 +436,7 @@ const fetchSubSubCategories = async () => {
   }
 }
 
+// Fetch all products of a category, subcategory, or subsubcategory
 const fetchProducts = async () => {
   if (!route.params.subsubcategoryId || !route.params.subcategoryId) {
     products.value = []
@@ -332,6 +459,7 @@ const fetchProducts = async () => {
   }
 }
 
+// Fetch product details
 const fetchProductDetails = async (productId) => {
     if (!route.params.productId) return
 
@@ -347,11 +475,36 @@ const fetchProductDetails = async (productId) => {
     }
 }
 
+// Those three fcts are for the search bar
+const allSubcategories = computed(() => {
+  return sideBar.value.flatMap(cat => cat.subcategories || [])
+})
+
+const allSubsubcategories = computed(() => {
+  return sideBar.value.flatMap(cat => 
+    cat.subcategories?.flatMap(subcat => subcat.subsubcategories || []) || []
+  )
+})
+
+// Get all Products
+const getProducts = async () => {
+  try {
+    const response = await api.getAllProducts()
+    allProducts.value = response.data || []
+    return allProducts.value // Return the actual array
+  } catch (error) {
+    console.error('Error fetching products:', error)
+    return []
+  }
+}
+
+// Fetch data in the correct order
 const fetchData = async () => {
   loading.value = true;
   try {
     await fetchProductsSidBar();
     await fetchCategories();
+    await getProducts();
     
     if (route.params.categoryId) {
       await fetchSubCategories();
@@ -364,8 +517,11 @@ const fetchData = async () => {
         }
       }
     }
+    // Delay productDetails fetching slightly to ensure others finish
     if (route.params.productId) {
-      await fetchProductDetails(route.params.productId)
+      setTimeout(() => {
+        fetchProductDetails(route.params.productId)
+      }, 50)
     }
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -427,6 +583,13 @@ watch(
   { deep: true }
 );
 
+// watch for the search
+watch(() => route.fullPath, () => {
+  // Clear search when route changes
+  isSearching.value = false
+  searchResults.value = []
+})
+
 </script>
 
 <style scoped>
@@ -439,7 +602,7 @@ watch(
 .productsView-container {
   flex: 1;
   padding-left: 45px;
-  margin-top: 55px; /* Space for fixed header */
+  margin-top: 96px; /* Reduced from 55px to account for header height */
 }
 
 .productsView-header {
@@ -450,12 +613,20 @@ watch(
   position: fixed;
   top: 100px;
   left: 0;
-  width: 100%;
+  width: calc(100% - 45px); /* Account for sidebar */
   background-color: white;
   z-index: 1001;
   display: flex;
   align-items: center;
-  min-height: 36px; /* Match h2 height */
+  min-height: 36px;
+  gap: 20px; /* Space between title/breadcrumb and search */
+}
+
+.header-search-container {
+  flex-grow: 1;
+  max-width: 500px;
+  margin-left: auto;
+  position: relative;
 }
 
 .productsView-header h2 {
@@ -554,4 +725,23 @@ watch(
   margin-right: auto;
 }
 
+@media (max-width: 768px) {
+  .productsView-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding-bottom: 15px;
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .header-search-container {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    padding: 0 15px;
+  }
+  
+
+}
 </style>

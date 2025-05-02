@@ -1,6 +1,7 @@
 const Category = require('../models/Category');
 const Subsubcategory = require('../models/Subsubcategory');
 const Subcategory = require('../models/Subcategory');
+const Product = require('../models/Product');
 
 // Get all categories
 exports.getAllCategories = async (req, res) => {
@@ -74,6 +75,33 @@ exports.getCategoryById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// search bar fct
+exports.searchItem = async (req, res) => {
+  const { q } = req.query
+  if (!q || q.trim() === '') return res.status(400).json({ error: 'Query required' })
+
+  const regex = new RegExp(q.trim(), 'i') // case-insensitive regex
+
+  try {
+    const [categories, subcategories, subsubcategories, products] = await Promise.all([
+      Category.find({ category_name: regex }),
+      Subcategory.find({ subcategory_name: regex }),
+      Subsubcategory.find({ subsubcategory_name: regex }),
+      Product.find({ product_name: regex }),
+    ])
+
+    res.json({
+      categories,
+      subcategories,
+      subsubcategories,
+      products,
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
 
 // Create new category
 exports.createCategory = async (req, res) => {

@@ -25,7 +25,7 @@ const emit = defineEmits(['navigate'])
 
 const handleClick = () => {
   emit('navigate', props.subsubcategory._id)
-  productStore.setActiveSubsubcategory(props.subsubcategory)
+  productStore.setActiveSubsubcategory(props.subsubcategory._id)
 }
 
 </script>

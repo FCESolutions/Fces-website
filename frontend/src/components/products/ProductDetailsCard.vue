@@ -5,8 +5,6 @@
       <h1 class="product-title">{{ product.product_name }}</h1>
       <div class="product-meta">
         <span class="product-brand">{{ product.price }}</span>
-        <span class="product-category" v-if="product.subsubcategory_name">{{ product.category_name }} › {{ product.subcategory_name }} › {{ product.subsubcategory_name }}</span>
-        <span class="product-category" v-else>{{ product.category_name }} › {{ product.subcategory_name }} </span>
       </div>
     </div>
 
@@ -117,6 +115,9 @@ const props = defineProps({
 
 // Get the category store instance
 const productStore = useProductStore()
+productStore.setActiveCategory(props.product.category_id)
+productStore.setActiveSubcategory(props.product.subcategory_id)
+productStore.setActiveSubsubcategory(props.product.subsubcategory_id)
 </script>
 
 <style scoped>
