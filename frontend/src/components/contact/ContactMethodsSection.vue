@@ -32,24 +32,14 @@
   min-height: 400px;
 }
 
+/* Left Panel: Contact Info */
 .contact-left {
   flex: 1;
-  background: #111;
-  color: white;
+  background: #1A2B2E; /* dark teal-black */
+  color: #E9E5DB;
   padding: 80px 40px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.contact-right {
-  flex: 1;
-  background: #1b1b1b;
-  color: #e0c177;
-  padding: 80px 40px;
-  position: relative;
-  display: flex;
-  align-items: center;
   justify-content: center;
 }
 
@@ -57,7 +47,7 @@
   font-family: "Aboreto", serif;
   font-size: 1.5rem;
   margin-bottom: 30px;
-  color: #e0c177;
+  color: #7A8B74; /* sage green */
 }
 
 .info .line {
@@ -67,11 +57,24 @@
   font-size: 1rem;
   margin-bottom: 20px;
   font-family: "Poppins", sans-serif;
+  color: #E9E5DB;
 }
 
 .info i {
-  color: #e0c177;
+  color: #7A8B74;
   font-size: 1.2rem;
+}
+
+/* Right Panel: Slogan Section */
+.contact-right {
+  flex: 1;
+  background: #E9E5DB;
+  color: #1A2B2E;
+  padding: 80px 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .slogan {
@@ -79,14 +82,68 @@
   font-size: 2.2rem;
   z-index: 2;
   text-align: center;
+  color: #2F8F9D; /* accent */
 }
 
+/* Background icon*/
 .icon-bg {
   position: absolute;
   font-size: 9rem;
-  color: #e0c177;
-  opacity: 0.06;
+  color: #E38B29; /* muted terracotta orange */
+  opacity: 0.1;
   bottom: 10px;
   right: 30px;
 }
+
+@media (max-width: 768px) {
+  .contact-duo {
+    flex-direction: column;
+  }
+
+  .contact-left,
+  .contact-right {
+    padding: 40px 20px;
+    flex: none;
+    width: 100%;
+    min-height: auto;
+  }
+
+  .label {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .info .line {
+    justify-content: center;
+    font-size: 0.95rem;
+  }
+
+  .slogan {
+    font-size: 1.8rem;
+    padding: 0 10px;
+  }
+
+  .icon-bg {
+    font-size: 6rem;
+    bottom: 5px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slogan {
+    font-size: 1.6rem;
+  }
+
+  .info .line {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .label {
+    font-size: 1.2rem;
+  }
+}
+
 </style>

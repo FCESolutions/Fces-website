@@ -1,10 +1,15 @@
 <template>
-  <div class="category-sidebar-wrapper" @mouseenter="showSidebar = true" @mouseleave="showSidebar = false">
-    <div class="sidebar-toggle-icon">
-      <Icon icon="iconoir:menu" class="menu-icon" />
+  <div 
+    class="category-sidebar-wrapper" 
+    @mouseenter="showSidebar = true" 
+    @mouseleave="showSidebar = false"
+    @touchstart="handleTouchStart"
+  >
+    <div class="sidebar-toggle-icon" @click="toggleSidebar">
+      <Icon :icon="showSidebar ? 'iconoir:xmark' : 'iconoir:menu'" class="menu-icon" />
     </div>
 
-    <div class="category-sidebar" v-show="showSidebar">
+    <div class="category-sidebar" :class="{ 'mobile-visible': isMobileVisible }" v-show="showSidebar || isMobileVisible">
       <nav class="category-nav">
         <div 
           v-for="category in categories" 
@@ -122,10 +127,10 @@
 </template>
 
 <script setup>
-  import { ref, computed, watch, onMounted } from 'vue'
-  import { useRouter, useRoute } from 'vue-router'
-  import { Icon } from '@iconify/vue'
-  import { useProductStore } from '@/stores/productStore'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Icon } from '@iconify/vue'
+import { useProductStore } from '@/stores/productStore'
 
   const props = defineProps({
     categories: {
@@ -218,6 +223,40 @@
     expandedSubcategories.value = set
   }
 
+  // Add mobile detection
+  const isMobile = ref(false)
+  const isMobileVisible = ref(false)
+  const touchStartX = ref(0)
+
+  const checkMobile = () => {
+    isMobile.value = window.innerWidth <= 768
+  }
+
+  const handleTouchStart = (e) => {
+    if (!isMobile.value) return
+    touchStartX.value = e.touches[0].clientX
+    document.addEventListener('touchmove', handleTouchMove)
+    document.addEventListener('touchend', handleTouchEnd)
+  }
+
+  const handleTouchMove = (e) => {
+    const touchX = e.touches[0].clientX
+    if (touchX - touchStartX.value > 50) {
+      isMobileVisible.value = true
+    }
+  }
+
+  const handleTouchEnd = () => {
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+  }
+
+  const toggleSidebar = () => {
+    if (isMobile.value) {
+      isMobileVisible.value = !isMobileVisible.value
+    }
+  }
+
   const resetActiveStates = () => {
   productStore.resetActiveStates()
   expandedCategories.value.clear()
@@ -249,6 +288,12 @@
     { immediate: true }
   )
 
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', checkMobile)
+    document.removeEventListener('touchmove', handleTouchMove)
+    document.removeEventListener('touchend', handleTouchEnd)
+  })
+
   onMounted(() => {
     if (!route.params.categoryId) {
       resetActiveStates()
@@ -258,39 +303,40 @@
     } else if (route.params.subcategoryId && !route.params.subsubcategoryId) {
       productStore.resetActiveSubsubcategory()
     }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
   })
 </script>
-
-
 
 <style scoped>
 .category-sidebar-wrapper {
   position: fixed;
-  top: 113px; /* aligns with your navbar */
+  top: 119px;
   left: 0;
-  width: 260px; /* slightly more than the sidebar width */
-  height: 100vh;
+  width: 260px;
+  height: calc(100vh - 119px);
   z-index: 1000;
-  pointer-events: none; /* allow only children to receive hover */
+  pointer-events: none;
 }
-
 
 .sidebar-toggle-icon {
   position: fixed;
   left: 10px;
   background-color: #ffffff;
-  padding-bottom: 8px;
+  padding-bottom: 11px;
   padding-right: 6px;
   font-size: 1.8rem;
   cursor: pointer;
   z-index: 1001;
+  pointer-events: auto;
 }
 
 .category-sidebar {
   width: 250px;
   max-height: calc(100vh - 170px);
   position: absolute;
-  top: 40px;
+  top: 0;
   left: 0;
   background: #ffffff;
   border-right: 1px solid #e0e0e0;
@@ -298,7 +344,8 @@
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
   z-index: 1000;
-  transition: opacity 0.2s ease;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+  pointer-events: auto;
 }
 
 .sidebar-toggle-icon,
@@ -465,4 +512,56 @@
   background: #edf2f7;
   color: #2b6cb0;
 }
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .category-sidebar-wrapper {
+    width: 100%;
+    height: auto;
+  }
+
+  .sidebar-toggle-icon {
+    display: block;
+    position: fixed;
+    top: 85px;
+    left: 10px;
+    z-index: 1200;
+  }
+
+  .category-sidebar {
+    position: fixed;
+    top: 119px;
+    left: -250px;
+    height: calc(100vh - 119px);
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    overflow-y: auto; /* Ensure scrolling works */
+    padding-bottom: 20px; /* Add some padding at bottom */
+  }
+
+  .category-sidebar.mobile-visible {
+    transform: translateX(250px);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+  }
+
+  .category-sidebar::-webkit-scrollbar {
+    width: 4px; 
+  }
+
+  .category-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .category-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2); /* Lighter thumb */
+    border-radius: 2px;
+  }
+
+  .category-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.3);
+  }
+}
+
 </style>

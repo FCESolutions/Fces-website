@@ -6,16 +6,6 @@ const orderItemSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
-  },
   productName: { // Storing denormalized data for historical reference
     type: String,
     required: true
@@ -31,25 +21,17 @@ const customerSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
     lowercase: true,
-    match: [/\S+@\S+\.\S+/, 'is invalid']
+    match: [/\S+@\S+\.\S+/, 'est invalide']
   },
   phone: {
     type: String,
     required: true,
     trim: true
   },
-  /*address: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  notes: {
-    type: String,
-    trim: true
-  }*/}, { _id: false });
+}, { _id: false });
 
 const orderSchema = new mongoose.Schema({
   customer: {
@@ -63,29 +45,14 @@ const orderSchema = new mongoose.Schema({
       validator: function(v) {
         return v.length > 0;
       },
-      message: 'Order must have at least one item'
+      message: 'La commande doit avoir au moins un article'
     }
-  },
-  subtotal: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  total: {
-    type: Number,
-    required: true,
-    min: 0
   },
   status: {
     type: String,
     required: true,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending'
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'paid', 'failed', 'refunded', null],
-    default: null
+    enum: ['En attente', 'En cours de traitement', 'Livré', 'Annulé'],
+    default: 'En attente'
   },
   orderNumber: {
     type: String,

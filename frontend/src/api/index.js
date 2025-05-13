@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { getAllSubcategories } from '../../../backend/controllers/subcategoryController'
 
 const api = axios.create({
   baseURL: 'http://localhost:4000/api'
@@ -38,6 +37,15 @@ export default {
   },
   submitOrder(orderData) {
     return api.post('/orders', orderData)
-  }
+  },
+  checkAdmin(password) {
+    return api.post('/admin/admin-access', { password })
+  },
+  updateOrderStatus(orderId, status) {
+    return api.put(`/admin/${orderId}/status`, { status })
+  },
+  deleteOrder(orderId) {
+    return api.delete(`/admin/${orderId}`)
+  },
   // Add other endpoints...
 }

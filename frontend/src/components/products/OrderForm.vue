@@ -1,85 +1,60 @@
 <template>
   <div class="order-form-container">
-    <h2>Order Information</h2>
+    <h2>Informations de commande</h2>
 
     <div v-if="errors.length" class="error-messages">
-        <p v-for="error in errors" :key="error">{{ error }}</p>
+      <p v-for="error in errors" :key="error">{{ error }}</p>
     </div>
-    
+
     <form @submit.prevent="submitOrder" class="order-form">
       <div class="form-group">
-        <label for="name">Full Name</label>
+        <label for="name">Nom complet</label>
         <input 
           type="text" 
           id="name" 
           v-model="formData.name" 
           required
-          placeholder="Your full name"
+          placeholder="Votre nom complet"
         >
       </div>
-      
+
       <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">Email (optionnel)</label>
         <input 
           type="email" 
           id="email" 
           v-model="formData.email" 
-          required
-          placeholder="Your email address"
+          placeholder="Votre adresse email"
         >
       </div>
-      
+
       <div class="form-group">
-        <label for="phone">Phone Number</label>
+        <label for="phone">Numéro de téléphone</label>
         <input 
           type="tel" 
           id="phone" 
           v-model="formData.phone" 
           required
-          placeholder="Your phone number"
+          placeholder="Votre numéro de téléphone"
         >
       </div>
-      
-      <!-- <div class="form-group">
-        <label for="address">Delivery Address</label>
-        <textarea 
-          id="address" 
-          v-model="formData.address" 
-          required
-          placeholder="Your complete delivery address"
-        ></textarea>
-      </div> -->
-      
-      <!-- <div class="form-group">
-        <label for="notes">Additional Notes</label>
-        <textarea 
-          id="notes" 
-          v-model="formData.notes" 
-          placeholder="Any special instructions"
-        ></textarea>
-      </div> -->
-      
-      <div class="order-summary">
-        <h3>Order Summary</h3>
-        <div v-for="item in cartStore.items" :key="item.product._id" class="order-item">
-          <span>{{ item.product.product_name }} (x{{ item.quantity }})</span>
-          <span>{{ item.product.product_price * item.quantity }} €</span>
-        </div>
-        <div class="order-total">
-          <span>Total:</span>
-          <span>{{ cartStore.totalPrice }} €</span>
+
+      <div class="order-summary" v-if="product">
+        <h3>Résumé de la commande</h3>
+        <div class="order-item">
+          <span>{{ product.product_name }}</span>
         </div>
       </div>
-      
+
       <button type="submit" class="submit-btn" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Placing Order...' : 'Place Order' }}
+        {{ isSubmitting ? 'Commande en cours...' : 'Passer la commande' }}
       </button>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import api from '@/api'
 import { useCartStore } from '@/stores/cartStore'
 import { useRouter } from 'vue-router'
@@ -90,6 +65,10 @@ const cartStore = useCartStore()
 const router = useRouter()
 
 const errors = ref([])
+const isSubmitting = ref(false)
+
+const product = computed(() => cartStore.currentProduct)
+
 const formData = ref({
   name: '',
   email: '',
@@ -98,70 +77,57 @@ const formData = ref({
   notes: ''
 })
 
-const isSubmitting = ref(false)
-
 const validateForm = () => {
   errors.value = []
-  
+
   if (!formData.value.name.trim()) {
-    errors.value.push('Name is required')
+    errors.value.push('Le nom est requis')
   }
-  
-  if (!formData.value.email.trim()) {
-    errors.value.push('Email is required')
-  } else if (!/^\S+@\S+\.\S+$/.test(formData.value.email)) {
-    errors.value.push('Please enter a valid email')
+
+  if (formData.value.email && !/^\S+@\S+\.\S+$/.test(formData.value.email)) {
+    errors.value.push('Veuillez entrer un email valide')
   }
-  
+
   if (!formData.value.phone.trim()) {
-    errors.value.push('Phone number is required')
+    errors.value.push('Le numéro de téléphone est requis')
   }
-  /*
-  if (!formData.value.address.trim()) {
-    errors.value.push('Address is required')
-  }
-  */
-  
+
   return errors.value.length === 0
 }
 
 const submitOrder = async () => {
-    if (!validateForm()) return
-    isSubmitting.value = true
-    
-    try {
-        const orderData = {
-            customer: {
-                name: formData.value.name,
-                email: formData.value.email,
-                phone: formData.value.phone,
-                /*address: formData.value.address,
-                notes: formData.value.notes || '' // Ensure notes is at least an empty string*/
-            },
-            items: cartStore.items.map(item => ({
-                productId: item.product._id,
-                quantity: item.quantity,
-                price: item.product.product_price || 0, 
-                productName: item.product.product_name, // Required by schema
-                productImage: item.product.product_image_url || null // Optional but good to include
-            })),
-            subtotal: cartStore.totalPrice || 0, 
-            total: cartStore.totalPrice || 0, 
-            status: 'pending',
-            paymentStatus: 'pending'
+  if (!validateForm() || !product.value) return
+  isSubmitting.value = true
+
+  try {
+    const orderData = {
+      customer: {
+        name: formData.value.name,
+        email: formData.value.email,
+        phone: formData.value.phone
+      },
+      items: [
+        {
+          productId: product.value._id,
+          productName: product.value.product_name,
+          productImage: product.value.product_image_url || null
         }
-        console.log('Order Data:', orderData)
-        await api.submitOrder(orderData)
-        
-        toast.success('Your order has been placed successfully!')
-        cartStore.clearCart()
-        router.push({ name: 'Home' })
-    } catch (error) {
-        console.error('Error submitting order:', error)
-        toast.error('There was an error placing your order. Please try again.')
-    } finally {
-        isSubmitting.value = false
+      ],
+      status: 'En attente',
     }
+
+    console.log('Order Data:', orderData)
+    await api.submitOrder(orderData)
+
+    toast.success('Votre commande a été placée avec succès !')
+    cartStore.clear()
+    router.push({ name: 'Home' })
+  } catch (error) {
+    console.error('Error submitting order:', error)
+    toast.error('Une erreur est survenue lors de la commande. Veuillez réessayer')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -239,16 +205,6 @@ textarea {
   border-bottom: 1px solid #f0f0f0;
   font-size: 15px;
   color: #444;
-}
-
-.order-total {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  padding-top: 12px;
-  margin-top: 10px;
-  font-size: 17px;
-  border-top: 1px solid #ccc;
 }
 
 .submit-btn {

@@ -40,4 +40,29 @@
   border: none;
   filter: grayscale(50%) contrast(120%) brightness(90%);
 }
+
+@media (max-width: 768px) {
+  .map-section {
+    padding: 40px 15px 0;
+  }
+
+  .map-title {
+    font-size: 1.5rem;
+  }
+
+  .map-wrapper {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-title {
+    font-size: 1.3rem;
+  }
+
+  .map-wrapper {
+    height: 250px;
+  }
+}
+
 </style>

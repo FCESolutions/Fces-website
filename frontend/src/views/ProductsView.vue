@@ -105,25 +105,20 @@
           <!-- Category level (shows subcategories + category-level products) -->
           <div v-else-if="route.params.categoryId && !route.params.subcategoryId"> 
             <ReturnButton />
-            <div v-if="subcategories.length > 0" class="categories-grid">
+            <div v-if="subcategories.length > 0 || subcategoryLevelProducts.length > 0" class="categories-grid">
               <SubCategoryCard 
                 v-for="subcat in subcategories" 
                 :key="subcat._id" 
                 :subcategory="subcat" 
                 @navigate="goToSubcategory"
               />
-            </div>
-            
-            <!-- Show category-level products if they exist -->
-            <div v-if="subcategoryLevelProducts.length > 0">
-              <div class="products-grid">
-                <ProductCard 
-                  v-for="product in subcategoryLevelProducts" 
-                  :key="product._id" 
-                  :product="product" 
-                  @navigate="goToProduct"
-                />
-              </div>
+              
+              <ProductCard 
+                v-for="product in subcategoryLevelProducts" 
+                :key="product._id" 
+                :product="product" 
+                @navigate="goToProduct"
+              />
             </div>
 
             <p 
@@ -137,25 +132,20 @@
           <!-- Subcategory level (shows subsubcategories + subcategory-level products) -->
           <div v-else-if="route.params.categoryId && route.params.subcategoryId && !route.params.subsubcategoryId">
             <ReturnButton />
-            <div v-if="subsubcategories.length > 0" class="categories-grid">
+            <div v-if="subsubcategories.length > 0 || subsubcategoryLevelProducts.length > 0" class="categories-grid">
               <SubSubCategoryCard 
                 v-for="subsubcat in subsubcategories" 
                 :key="subsubcat._id" 
                 :subsubcategory="subsubcat" 
                 @navigate="goToSubSubcategory"
               />
-            </div>
-            
-            <!-- Show subcategory-level products if they exist -->
-            <div v-if="subsubcategoryLevelProducts.length > 0">
-              <div class="products-grid">
-                <ProductCard 
-                  v-for="product in subsubcategoryLevelProducts" 
-                  :key="product._id" 
-                  :product="product" 
-                  @navigate="goToProduct"
-                />
-              </div>
+
+              <ProductCard 
+                v-for="product in subsubcategoryLevelProducts" 
+                :key="product._id" 
+                :product="product" 
+                @navigate="goToProduct"
+              />
             </div>
 
             <p 
@@ -189,7 +179,6 @@
         </div>
       </div>
     </div>
-    <FloatingCart />
   </div>
 </template>
 
@@ -207,7 +196,6 @@ import ProductCard from '@/components/products/ProductCard.vue'
 import ProductDetailsCard from '@/components/products/ProductDetailsCard.vue'
 import ReturnButton from '@/components/ReturnButton.vue'
 import SearchBar from '@/components/products/SearchBar.vue'
-import FloatingCart from '@/components/products/FloatingCart.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -602,7 +590,7 @@ watch(() => route.fullPath, () => {
 .productsView-container {
   flex: 1;
   padding-left: 45px;
-  margin-top: 96px; /* Reduced from 55px to account for header height */
+  margin-top: 90px; /* Reduced from 55px to account for header height */
 }
 
 .productsView-header {
@@ -686,9 +674,10 @@ watch(() => route.fullPath, () => {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 20px;
-  margin-top: 30px; /* Give space for fixed header */
+  margin-top: 20px; /* Give space for fixed header */
+  margin-bottom: 30px;
 }
 
 .categories-grid {
@@ -697,6 +686,7 @@ watch(() => route.fullPath, () => {
   gap: 20px;
   padding: 15px 20px;
   margin-top: 20px; /* Give space for fixed header */
+  margin-bottom: 30px;
 }
 
 .loading {
@@ -726,22 +716,86 @@ watch(() => route.fullPath, () => {
 }
 
 @media (max-width: 768px) {
+  .layout-container {
+    flex-direction: column;
+  }
+
+  .productsView-container {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 100px; /* Increased to account for stacked header */
+  }
+
   .productsView-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-    padding-bottom: 15px;
+    gap: 12px;
+    padding: 12px 15px;
     width: 100%;
     margin-left: 0;
+    top: 80px; /* Adjust based on your navbar height */
+    height: auto;
+    min-height: auto;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
-  
+
+  .productsView-header h2 {
+    font-size: 1.3rem;
+    order: 1; /* Ensure title comes first */
+  }
+
+  .breadcrumb {
+    order: 2; /* Breadcrumb comes after title */
+    font-size: 1rem;
+    gap: 0.3rem;
+    margin-bottom: 0;
+  }
+
+  .breadcrumb-item {
+    color: #5a8fc7; /* Updated blue color */
+  }
+
+  .breadcrumb-item:hover {
+    color: #4a7cb4; /* Slightly darker on hover */
+  }
+
+  .breadcrumb-separator {
+    width: 1rem;
+    height: 1rem;
+    margin: 0 0.1rem;
+  }
+
   .header-search-container {
+    order: 3; /* Search comes last */
     width: 100%;
     max-width: 100%;
     margin-left: 0;
-    padding: 0 15px;
+    padding: 0;
   }
-  
 
+  /* Sidebar toggle icon fix */
+  .sidebar-toggle-icon {
+    position: fixed;
+    top: 100px; /* Adjust based on your header height */
+    left: 100px;
+    z-index: 2000; /* Higher than header's 1001 */
+    background: white;
+    padding: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .sidebar-toggle-icon .menu-icon {
+    font-size: 1.8rem;
+    color: #2d3748;
+  }
+
+  .categories-grid,
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 10px 0;
+    margin-bottom: 20px;
+  }
 }
 </style>

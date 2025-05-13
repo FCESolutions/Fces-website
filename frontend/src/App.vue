@@ -7,8 +7,20 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router'
 import Footer from './components/Footer.vue';
 import TheNavbar from './components/TheNavbar.vue';
+
+const router = useRouter()
+
+onMounted(() => {
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+      router.push('admin/admin-access')
+    }
+  });
+});
 </script>
 
 <style>

@@ -8,16 +8,15 @@
           </div>
           <div class="text-zone">
             <p><strong>DÉCOUVREZ LES AVANTAGES DE FCES DÈS AUJOURD'HUI</strong></p>
-            <p>Choisir FCES, c’est opter pour des solutions énergétiques durables et rentables. Profitez d’une efficacité énergétique qui réduit vos factures tout en préservant l’environnement.</p>
+            <p>Choisir FCES, c'est opter pour des solutions énergétiques durables et rentables. Profitez d'une efficacité énergétique qui réduit vos factures tout en préservant l'environnement.</p>
           </div>
-
 
           <div class="benefits">
             <div class="benefit-card">
               <div class="card-icon">
                 <Icon icon="carbon:energy-renewable" width="24" height="24" />
               </div>
-              <h3>Économie d’énergie</h3>
+              <h3>Économie d'énergie</h3>
               <p>Réduisez vos dépenses sans compromis sur le confort grâce à nos systèmes automatisés à haute efficacité.</p>
             </div>
 
@@ -178,14 +177,84 @@ import { Icon } from '@iconify/vue';
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Responsive adjustments */
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 992px) {
+  .effectivite-section {
+    padding: 80px 30px;
+  }
+  
+  .effectivite-wrapper {
+    gap: 40px;
+  }
+  
+  .text-zone p:first-child {
+    font-size: 2.2rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .effectivite-section {
+    padding: 60px 20px;
+  }
+  
   .effectivite-wrapper {
     grid-template-columns: 1fr;
+    gap: 40px;
   }
-
+  
   .image-side {
+    order: -1;
     text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .image-side img {
+    max-width: 100%;
+  }
+  
+  .text-zone p:first-child {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+  }
+  
+  .text-zone p:last-child {
+    font-size: 1rem;
+  }
+  
+  .benefits {
+    gap: 20px;
+  }
+  
+  .benefit-card {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .effectivite-section {
+    padding: 50px 15px;
+  }
+  
+  .section-label {
+    font-size: 0.75rem;
+    padding-left: 30px;
+  }
+  
+  .text-zone p:first-child {
+    font-size: 1.5rem;
+  }
+  
+  .benefit-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .benefit-card p {
+    font-size: 0.9rem;
+  }
+  
+  .card-icon {
+    width: 40px;
+    height: 40px;
   }
 }
 </style>

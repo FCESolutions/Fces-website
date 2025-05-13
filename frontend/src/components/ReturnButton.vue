@@ -19,6 +19,14 @@ const goBack = () => {
   const { categoryId, subcategoryId, subsubcategoryId } = route.params
   const from = route.query.from
 
+  const currentPath = route.path
+
+  // If current path is /products/order and from exists, go back to "from"
+  if (currentPath.includes('/products/order') && from) {
+    router.push(from)
+    return
+  }
+
   // 1. First priority: if "from" query exists, use it
   if (from) {
     router.push(from)
@@ -43,7 +51,7 @@ const goBack = () => {
   align-items: center;
   padding: 0.5rem;
   margin-bottom: 2px;
-  margin-top: 15px;
+  margin-top: 1px;
   background-color: transparent;
   border: none;
   cursor: pointer;

@@ -1,26 +1,49 @@
 <template>
   <nav :class="['navbar', { scrolled: isScrolled }]">
     <div class="logo">
-      <p><span class="mark">F</span>ces</p>
+      <img :src="logoImg" alt="FCES MAROC Logo" class="logo-img" @click="handleLogoClick"/>
     </div>
 
-
-    <div class="nav-links">
-      <router-link :to="{ name: 'Home' }">Acceuil</router-link>
-      <router-link :to="{ name: 'Products' }">Nos Produits</router-link>
-      <router-link :to="{ name: 'Services' }">Nos Services</router-link>
-      <router-link :to="{ name: 'Contact' }">Contactez-nous</router-link>
+    <div class="nav-links" :class="{ 'mobile-menu-open': isMenuOpen }">
+      <router-link :to="{ name: 'Home' }" @click="closeMenu">Accueil</router-link>
+      <router-link :to="{ name: 'Products' }" @click="closeMenu">Nos Produits</router-link>
+      <router-link :to="{ name: 'Services' }" @click="closeMenu">Nos Services</router-link>
+      <router-link :to="{ name: 'Projects' }" @click="closeMenu">Nos projets</router-link>
+      <router-link :to="{ name: 'Contact' }" @click="closeMenu">Contactez-nous</router-link>
     </div>
+
+    <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
+      <span :class="['hamburger-line', { 'line-1-open': isMenuOpen }]"></span>
+      <span :class="['hamburger-line', { 'line-2-open': isMenuOpen }]"></span>
+      <span :class="['hamburger-line', { 'line-3-open': isMenuOpen }]"></span>
+    </button>
   </nav>
 </template>
 
 <script setup>
+import logoImg from '../assets/logo.jpg'
 import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const isScrolled = ref(false)
+const isMenuOpen = ref(false)
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
+}
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
+}
+
+const closeMenu = () => {
+  isMenuOpen.value = false
+}
+
+const handleLogoClick = () => {
+  router.push({ name: 'Home' })
 }
 
 onMounted(() => {
@@ -33,70 +56,56 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Ultra Minimal Transparent Navbar */
+/* Base Navbar Styles */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 5%;
-    background: transparent;
-    height: 100px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 2000;
-    transition: background 0.1s ease, box-shadow 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5%;
+  background: transparent;
+  height: 100px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  transition: background 0.1s ease, box-shadow 0.3s ease;
 }
 
 .navbar.scrolled {
   background-color: white;
 }
 
-
-/* Logo with subtle depth */
-.logo p {
-  font-family: "Marck Script", cursive;
-  font-size: 2.9rem;
-  font-weight: 700;
-  color: #1A1A1A;
-  letter-spacing: -0.8px;
-  margin: 0;
-  padding: 0;
-  position: relative;
-  display: inline-block;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2100;
 }
 
-/* Capital F only */
-.logo-mark {
-  font-weight: 800;
-  font-size: 2.9rem;
-  letter-spacing: -1.5px;
-  text-transform: uppercase;
-  margin-right: 1px;
+.logo-img {
+  height: 58px;
+  object-fit: contain;
+  display: block;
+  opacity: 0;
+  transform: translateX(-15px);
+  animation: logoSlideIn 0.7s ease-out 0.2s forwards;
 }
 
-/* Dot at the bottom-right */
-.logo p::after {
-  content: '•';
-  font-size: 2.5rem;
-  position: absolute;
-  bottom: -0.34rem;
-  right: -0.6rem;
-  color: #7A8B74; /* You can change this to #999 or any muted tone */
-  opacity: 0.8;
+@keyframes logoSlideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-
-.logo:hover {
-  transform: scale(1.05);
-}
-
-/* Navigation Links - Floating Style */
+/* Navigation Links */
 .nav-links {
   display: flex;
   align-items: center;
   gap: 2.5rem;
+  transition: right 0.3s ease-in-out;
+  z-index: 2000;
 }
 
 .nav-links a {
@@ -116,7 +125,7 @@ onBeforeUnmount(() => {
   height: 1px;
   bottom: 0;
   left: 0;
-  background-color: currentColor;
+  background-color: #00AEEF;
   transform: scaleX(0);
   transform-origin: right;
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
@@ -130,29 +139,122 @@ onBeforeUnmount(() => {
 /* Active Route Styling */
 .router-link-exact-active {
   font-weight: 600;
+  color: #00AEEF;
+  position: relative;
 }
 
 .router-link-exact-active::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px; /* Slightly thicker */
+  bottom: 0; /* Drop it below the text */
+  left: 0;
   transform: scaleX(1) !important;
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .navbar {
-    padding: 0 7%;
-    height: 80px;
-  }
-  
-  .logo p {
-    font-size: 2rem;
-  }
-  
+/* Hamburger Menu - Hidden by default */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2100;
+}
+
+.hamburger-line {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: #00AEEF;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+/* Hamburger Animation */
+.line-1-open {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.line-2-open {
+  opacity: 0;
+}
+
+.line-3-open {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
   .nav-links {
     gap: 1.8rem;
   }
   
   .nav-links a {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 7%;
+    height: 80px;
+  }
+  
+  /* Hide regular nav links and show hamburger */
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    max-width: 300px;
+    height: 100vh;
+    background-color: white;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    padding: 80px 0;
+  }
+  
+  .nav-links.mobile-menu-open {
+    right: 0;
+  }
+  
+  .nav-links a {
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .hamburger {
+    display: flex;
+  }
+  
+  /* Adjust logo size on mobile */
+  .logo-img {
+    height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0 5%;
+  }
+  
+  .nav-links {
+    width: 80%;
+  }
+  
+  .logo-img {
+    height: 42px;
   }
 }
 </style>

@@ -35,4 +35,30 @@
   font-family: "Poppins", sans-serif;
   line-height: 1.6;
 }
+
+@media (max-width: 768px) {
+  .contact-intro {
+    padding: 60px 15px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+}
+
 </style>

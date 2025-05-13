@@ -4,6 +4,8 @@ import ContactView from '@/views/ContactView.vue'
 import ServicesView from '@/views/ServicesView.vue'
 import ProductsView from '@/views/ProductsView.vue'
 import OrderView from '@/views/OrderView.vue'
+import AdminView from '@/views/AdminView.vue'
+import ProjectsView from '@/views/ProjectsView.vue'
 const routes = [
   {
     path: '/',
@@ -48,9 +50,20 @@ const routes = [
   },
   {
     path: '/',
+    name: 'Projects',
+    component: ProjectsView
+  },
+  {
+    path: '/',
     name: 'Contact',
     component: ContactView
   },
+  {
+    path: '/admin/admin-access',
+    name: 'Admin',
+    component: AdminView,
+    meta: { requiresAuth: true }
+  }
 ]
 
 const router = createRouter({

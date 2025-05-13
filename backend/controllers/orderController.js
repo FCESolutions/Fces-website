@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 
+
+exports.checkAdmin = async (req, res) => {
+  const { password } = req.body;
+  if (password !== process.env.ADMIN_SECRET_PASSWORD) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  Order.find().sort({ createdAt: -1 }).then(orders => {
+    res.json(orders);
+  }).catch(err => res.status(500).json({ error: 'Failed to fetch orders' }));
+};
+
 // Get all orders (for admin)
 exports.getAllOrders = async (req, res) => {
     try {
@@ -38,27 +50,36 @@ exports.createOrder =  async (req, res) => {
 
 // Update order status (for admin)
 exports.updateOrderStatus = async (req, res) => {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['status', 'paymentStatus'];
-    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-  
-    if (!isValidOperation) {
-      return res.status(400).send({ error: 'Invalid updates!' });
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    res.json({ message: 'Status updated', order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete order (for admin)
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findByIdAndDelete(req.params.orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
-  
-    try {
-      const order = await Order.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true, runValidators: true }
-      );
-      
-      if (!order) {
-        return res.status(404).send();
-      }
-      
-      res.send(order);
-    } catch (error) {
-      res.status(400).send(error);
-    }
+    console.log('Order deleted:', order);
+    res.json({ message: 'Order deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
 };

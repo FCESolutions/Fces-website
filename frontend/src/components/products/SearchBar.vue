@@ -8,10 +8,16 @@
         placeholder="Search products or categories..."
         class="search-input"
         @keyup.esc="clearSearch"
+        @focus="isFocused = true"
+        @blur="handleBlur"
       />
     </div>
 
-    <div v-if="searchTerm.trim()" class="search-results-dropdown">
+    <div 
+      v-if="searchTerm.trim() && isFocused" 
+      class="search-results-dropdown"
+      @mousedown.prevent
+    >
       <div v-if="filteredResults.length" class="results-grid">
         <template v-for="item in filteredResults" :key="item.data._id">
           <div class="search-result-item" @click="handleItemClick(item)">
@@ -29,7 +35,7 @@
             </div>
             <div v-else-if="item.type === 'product'">
               <h4 v-html="highlightMatch(item.data.product_name)"></h4>
-              <p>Product - {{ item.data.product_price }}€</p>
+              <p>Product - {{ formatPrice(item.data.product_price) }}</p>
             </div>
           </div>
         </template>
@@ -56,6 +62,14 @@ const props = defineProps({
 const emit = defineEmits(['navigate-state', 'search-state'])
 
 const searchTerm = ref('')
+const isFocused = ref(false)
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'MAD'
+  }).format(price)
+}
 
 const filteredResults = computed(() => {
   const keyword = searchTerm.value.trim().toLowerCase()
@@ -79,24 +93,31 @@ const filteredResults = computed(() => {
     ...(props.allProducts || [])
       .filter(prod => match(prod.product_name))
       .map(prod => ({ type: 'product', data: prod }))
-  ]
+  ].slice(0, 10) // Limit to 10 results for performance
 })
 
 const handleItemClick = (item) => {
   emit('navigate-state', { type: item.type, data: item.data })
   searchTerm.value = ''
+  isFocused.value = false
 }
 
 const clearSearch = () => {
   searchTerm.value = ''
+  isFocused.value = false
+}
+
+const handleBlur = () => {
+  setTimeout(() => {
+    isFocused.value = false
+  }, 200)
 }
 
 const highlightMatch = (text) => {
   const keyword = searchTerm.value.trim()
   if (!keyword) return text
-  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // escape special chars
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const regex = new RegExp(`(${escapedKeyword})`, 'gi')
-  console.log('highlighted:', text.replace(regex, '<span class="highlight">$1</span>'))
   return String(text).replace(regex, '<span class="highlight">$1</span>')
 }
 
@@ -111,8 +132,8 @@ watch(searchTerm, debounce(() => {
 <style scoped>
 .global-search {
   position: relative;
-  width: 70%;
-  max-width: 600px;
+  width: 100%;
+  max-width: 400px;
   margin: 0 auto;
 }
 
@@ -138,6 +159,7 @@ watch(searchTerm, debounce(() => {
   font-size: 1.4rem;
   color: #2F8F9D;
   margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -147,6 +169,7 @@ watch(searchTerm, debounce(() => {
   background: transparent;
   font-size: 1rem;
   color: #333;
+  min-width: 0; /* Prevent overflow */
 }
 
 .search-input::placeholder {
@@ -164,7 +187,7 @@ watch(searchTerm, debounce(() => {
   border: 1px solid #ddd;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  max-height: 350px;
+  max-height: min(350px, 70vh);
   overflow-y: auto;
 }
 
@@ -215,4 +238,59 @@ watch(searchTerm, debounce(() => {
   border-radius: 4px;
 }
 
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .global-search {
+    width: 100%;
+    padding: 0 15px;
+  }
+
+  .search-bar {
+    padding: 8px 15px;
+  }
+
+  .search-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+  }
+
+  .search-input {
+    font-size: 0.95rem;
+  }
+
+  .search-results-dropdown {
+    position: fixed;
+    left: 15px;
+    right: 15px;
+    width: auto;
+    max-height: min(400px, 60vh);
+    border-radius: 12px;
+  }
+
+  .search-result-item {
+    padding: 12px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    padding: 6px 12px;
+  }
+
+  .search-icon {
+    font-size: 1.1rem;
+  }
+
+  .search-input {
+    font-size: 0.9rem;
+  }
+
+  .search-result-item h4 {
+    font-size: 0.9rem;
+  }
+
+  .search-result-item p {
+    font-size: 0.75rem;
+  }
+}
 </style>

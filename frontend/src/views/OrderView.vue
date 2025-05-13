@@ -16,7 +16,7 @@ const cartStore = useCartStore()
 const router = useRouter()
 
 onBeforeMount(() => {
-  if (cartStore.items.length === 0) {
+  if (!cartStore.currentProduct) {
     router.push({ name: 'Home' })
   }
 })
