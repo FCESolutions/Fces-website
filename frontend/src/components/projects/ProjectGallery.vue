@@ -67,6 +67,7 @@ import systemeSolaireHybride14kwc from '@/assets/imgs/systemeSolaireHybride-14kw
 import systemeSolaireHybride12kwAC from '@/assets/imgs/systemeSolaireHybride-12kw-AC.jpg'
 import systemeSolaireHybride4kwc from '@/assets/imgs/systemeSolaireHybride-4kwc.jpg'
 import systemeSolaireHybride3kw from '@/assets/imgs/systemeSolaireHybride-3kw.jpg'
+import systemeSolaireHybride19kwc from '@/assets/imgs/systemeSolaireHybride-19kwc.jpg'
 
 import pompageSolaire300kw from '@/assets/imgs/pompageSolaire-300kw.jpg'
 import pompageSolaire300kw2 from '@/assets/imgs/pompageSolaire-300kw-2.jpg'
@@ -88,7 +89,7 @@ const projects = [
       { src:champsPv50kw1},
       { src: champsPv50kw2},
       { src: champsPv50kw3},
-      { src: champsPv50kw4}
+      { src: champsPv50kw4},
     ],
   },
   {
@@ -99,6 +100,7 @@ const projects = [
       { src: systemeSolaireHybride12kwAC, desc: 'Système solaire hybride – 12kW AC' },
       { src: systemeSolaireHybride4kwc, desc: 'Système solaire hybride – 4kWc' }, 
       { src: systemeSolaireHybride3kw, desc: 'Système solaire hybride – 3kW' },
+      { src: systemeSolaireHybride19kwc, desc: 'Système solaire hybride – 19kWc' },
     ],
   },
   {

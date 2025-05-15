@@ -1,7 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const nodemailer = require('nodemailer')
+require('dotenv').config();
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+})
 
 exports.checkAdmin = async (req, res) => {
   const { password } = req.body;
@@ -42,10 +51,37 @@ exports.createOrder =  async (req, res) => {
     try {
       const order = new Order(req.body);
       await order.save();
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER,
+        subject: 'Nouvelle commande reçue',
+        html: `
+          <h2>Nouvelle commande reçue</h2>
+          <p><strong>Nom du client:</strong> ${order.customer.name}</p>
+          <p><strong>Email:</strong> ${order.customer.email || 'Non fourni'}</p>
+          <p><strong>Téléphone:</strong> ${order.customer.phone}</p>
+
+          <h3>Produit commandé</h3>
+          <p><strong>Nom:</strong> ${order.items[0].productName}</p>
+          ${
+            order.items[0].productImage
+              ? `<img src="${order.items[0].productImage}" alt="Produit" style="max-width: 200px; border: 1px solid #ccc; padding: 5px;" />`
+              : '<p>Aucune image disponible.</p>'
+          }
+
+          <hr/>
+          <p style="color: #888;">Cet email vous a été envoyé automatiquement depuis le site FCES.</p>
+        `
+      };
+
+      await transporter.sendMail(mailOptions)
+
       res.status(201).send(order);
     } catch (error) {
       res.status(400).send(error);
     }
+
 };
 
 // Update order status (for admin)

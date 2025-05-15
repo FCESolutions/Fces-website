@@ -1,58 +1,61 @@
 <template>
   <div class="products-view">
-    <div class="layout-container">
-      <CategorySidebar :categories="sideBar" />
+    <div class="layout-container">      
       
       <div class="productsView-container">
         <!-- Header (always visible) -->
         <div class="productsView-header">
-          <div class="title-section">
-            <!-- Show category name only when NOT in a subcategory -->
-            <h2 v-if="!route.params.subcategoryId && !route.params.subsubcategoryId && !route.params.productId">
-              {{ currentCategoryName }}
-            </h2>
-            
-            <!-- Show breadcrumb path when in subcategory or deeper -->
-            <div v-if="breadcrumbPath.length > 0" class="breadcrumb">
-              <router-link
-                :to="{ name: 'ProductsByCategory', params: { categoryId: categoryIdFromPath } }"
-                class="breadcrumb-item"
-              >
+          <div class="title-row">
+            <CategorySidebar :categories="sideBar" />
+            <div class="title-section">
+
+              <!-- Show category name only when NOT in a subcategory -->
+              <h2 v-if="!route.params.subcategoryId && !route.params.subsubcategoryId && !route.params.productId">
                 {{ currentCategoryName }}
-              </router-link>
-
-              <template v-for="(crumb, index) in breadcrumbPath" :key="index">
-                <Icon icon="lucide:chevron-right" class="breadcrumb-separator" />
-                
+              </h2>
+              
+              <!-- Show breadcrumb path when in subcategory or deeper -->
+              <div v-if="breadcrumbPath.length > 0" class="breadcrumb">
                 <router-link
-                  v-if="index === 0"
-                  :to="{ 
-                    name: 'ProductsBySubcategory', 
-                    params: { 
-                      categoryId: categoryIdFromPath, 
-                      subcategoryId: crumb.id 
-                    } 
-                  }"
+                  :to="{ name: 'ProductsByCategory', params: { categoryId: categoryIdFromPath } }"
                   class="breadcrumb-item"
                 >
-                  {{ crumb.name }}
+                  {{ currentCategoryName }}
                 </router-link>
 
-                <router-link
-                  v-else-if="index === 1"
-                  :to="{ 
-                    name: 'ProductsBySubsubcategory', 
-                    params: { 
-                      categoryId: categoryIdFromPath, 
-                      subcategoryId: breadcrumbPath[0].id, 
-                      subsubcategoryId: crumb.id 
-                    } 
-                  }"
-                  class="breadcrumb-item"
-                >
-                  {{ crumb.name }}
-                </router-link>
-              </template>
+                <template v-for="(crumb, index) in breadcrumbPath" :key="index">
+                  <Icon icon="lucide:chevron-right" class="breadcrumb-separator" />
+                  
+                  <router-link
+                    v-if="index === 0"
+                    :to="{ 
+                      name: 'ProductsBySubcategory', 
+                      params: { 
+                        categoryId: categoryIdFromPath, 
+                        subcategoryId: crumb.id 
+                      } 
+                    }"
+                    class="breadcrumb-item"
+                  >
+                    {{ crumb.name }}
+                  </router-link>
+
+                  <router-link
+                    v-else-if="index === 1"
+                    :to="{ 
+                      name: 'ProductsBySubsubcategory', 
+                      params: { 
+                        categoryId: categoryIdFromPath, 
+                        subcategoryId: breadcrumbPath[0].id, 
+                        subsubcategoryId: crumb.id 
+                      } 
+                    }"
+                    class="breadcrumb-item"
+                  >
+                    {{ crumb.name }}
+                  </router-link>
+                </template>
+              </div>
             </div>
           </div>
 
@@ -576,6 +579,8 @@ watch(() => route.fullPath, () => {
   // Clear search when route changes
   isSearching.value = false
   searchResults.value = []
+  fetchCategories();
+  getProducts();
 })
 
 </script>
@@ -723,13 +728,13 @@ watch(() => route.fullPath, () => {
   .productsView-container {
     padding-left: 15px;
     padding-right: 15px;
-    margin-top: 100px; /* Increased to account for stacked header */
+    margin-top: 110px; /* Increased to account for stacked header */
   }
 
   .productsView-header {
-    flex-direction: column;
+    flex-direction: column; /* Stack rows */
     align-items: flex-start;
-    gap: 12px;
+    gap: 6px; /* Space between icon and title */
     padding: 12px 15px;
     width: 100%;
     margin-left: 0;
@@ -739,15 +744,23 @@ watch(() => route.fullPath, () => {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
   .productsView-header h2 {
     font-size: 1.3rem;
-    order: 1; /* Ensure title comes first */
+    margin: 0; 
   }
 
   .breadcrumb {
-    order: 2; /* Breadcrumb comes after title */
     font-size: 1rem;
     gap: 0.3rem;
+    margin-top: 0;
+    width: 100%;
     margin-bottom: 0;
   }
 
@@ -766,28 +779,11 @@ watch(() => route.fullPath, () => {
   }
 
   .header-search-container {
-    order: 3; /* Search comes last */
     width: 100%;
     max-width: 100%;
+    margin-top: 0;
     margin-left: 0;
     padding: 0;
-  }
-
-  /* Sidebar toggle icon fix */
-  .sidebar-toggle-icon {
-    position: fixed;
-    top: 100px; /* Adjust based on your header height */
-    left: 100px;
-    z-index: 2000; /* Higher than header's 1001 */
-    background: white;
-    padding: 5px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
-  .sidebar-toggle-icon .menu-icon {
-    font-size: 1.8rem;
-    color: #2d3748;
   }
 
   .categories-grid,

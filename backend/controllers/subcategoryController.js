@@ -5,7 +5,7 @@ const Product = require('../models/Product');
 // Get all subcategories
 exports.getAllSubcategories = async (req, res) => {
   try {
-    const subcategories = await Subcategory.find().populate('category_id', 'category_name');
+    const subcategories = await Subcategory.find();
     res.json(subcategories);
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -1,4 +1,4 @@
-<template>
+ <template>
   <section class="contact-intro">
     <div class="container">
       <h1 class="title">Une question ? Un projet ?</h1>

@@ -1,12 +1,19 @@
 <template>
   <div class="product-details">
     <!-- Header Section -->
-    <div class="product-header">
-      <h1 class="product-title">{{ product.product_name }}</h1>
-      <div class="product-meta">
-        <span class="product-brand">{{ product.price }}</span>
-      </div>
-    </div>
+<div class="product-header">
+  <h1 class="product-title">{{ product.product_name }}</h1>
+  <div class="product-subtitle">
+    <span class="product-price">{{ product.price }}</span>
+    <span class="product-stock-badge" :class="product.stock === 'En stock' ? 'in-stock' : 'out-of-stock'">
+        {{ product.stock > 0 ? 'En stock' : 'Rupture de stock' }}
+        <template v-if="product.stock > 0">
+          — {{ product.stock }} article{{ product.stock > 1 ? 's' : '' }}
+        </template>
+    </span>
+  </div>
+</div>
+
 
     <!-- Main Content -->
     <div class="product-content">
@@ -186,12 +193,37 @@ const proceedToCheckout = (event) => {
   line-height: 1.3;
 }
 
-.product-meta {
+.product-subtitle {
   display: flex;
-  gap: 1.5rem;
-  color: #4a5568;
-  font-size: 0.95rem;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
+  margin-top: 0.3rem;
 }
+
+.product-price {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.product-stock-badge {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+.in-stock {
+  background-color: #def7ec;
+  color: #03543f;
+}
+
+.out-of-stock {
+  background-color: #ffe5e5;
+  color: #9b2c2c;
+}
+
+
 
 .product-content {
   display: grid;

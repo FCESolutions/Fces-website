@@ -47,5 +47,8 @@ export default {
   deleteOrder(orderId) {
     return api.delete(`/admin/${orderId}`)
   },
+  updateOrderStock(productId, stock) {
+    return api.put(`/admin/${productId}/stock`, { stock });  // Updated to use products
+  }
   // Add other endpoints...
 }

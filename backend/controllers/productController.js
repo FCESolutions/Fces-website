@@ -6,10 +6,7 @@ const Subsubcategory = require('../models/Subsubcategory');
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find()
-      .populate('category_id', 'category_name')
-      .populate('subcategory_id', 'subcategory_name')
-      .populate('subsubcategory_id', 'subsubcategory_name');
+    const products = await Product.find();
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -44,8 +41,6 @@ exports.getProductsByLevel = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
-
-
 
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
@@ -178,5 +173,19 @@ exports.deleteProduct = async (req, res) => {
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateProductStock = async (req, res) => {
+  try {
+    const { stock } = req.body;
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      { stock },
+      { new: true }
+    );
+    res.send(updated);
+  } catch (error) {
+    res.status(400).send({ error: 'Erreur de mise à jour du stock' });
   }
 };

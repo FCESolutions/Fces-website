@@ -21,10 +21,7 @@ const productFileSchema = new Schema({
 });
 
 const productSchema = new Schema({
-  name: { type: String, required: true },
   product_name: { type: String },
-  primary_url: { type: String, required: true },
-  source_url: { type: String },
   category_id: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
   category_name: { type: String, required: true },
   subcategory_id: { type: Schema.Types.ObjectId, ref: 'Subcategory' },
@@ -36,10 +33,10 @@ const productSchema = new Schema({
     default: {},
   },
   price: { type: String },
-  main_image_url: { type: String },
   product_image_url: { type: String },
   external_links: [externalLinkSchema],
   product_files: [productFileSchema],
+  stock: { type: Number, required: true, default: 0},
   scraped: { type: Boolean, default: false },
   scraped_at: { type: Date, default: Date.now },
   last_updated: { type: Date, default: Date.now }

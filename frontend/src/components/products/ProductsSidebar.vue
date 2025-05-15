@@ -336,7 +336,7 @@ import { useProductStore } from '@/stores/productStore'
   width: 250px;
   max-height: calc(100vh - 170px);
   position: absolute;
-  top: 0;
+  top: 48px;
   left: 0;
   background: #ffffff;
   border-right: 1px solid #e0e0e0;
@@ -516,32 +516,39 @@ import { useProductStore } from '@/stores/productStore'
 /* Mobile styles */
 @media (max-width: 768px) {
   .category-sidebar-wrapper {
-    width: 100%;
+    position: static; /* Remove fixed so it flows with header */
+    width: 5%;
+    background: #fff; /* Match your header background */
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
     height: auto;
   }
 
   .sidebar-toggle-icon {
+    position: static; /* No fixed icon inside flow */
+    background: transparent;
+    padding: 0;
     display: block;
-    position: fixed;
-    top: 85px;
+    top: 90px;
     left: 10px;
     z-index: 1200;
   }
 
   .category-sidebar {
     position: fixed;
-    top: 119px;
+    top: 134px;
     left: -250px;
     height: calc(100vh - 119px);
     transform: translateX(0);
     transition: transform 0.3s ease;
     overflow-y: auto; /* Ensure scrolling works */
     padding-bottom: 20px; /* Add some padding at bottom */
+    
   }
 
   .category-sidebar.mobile-visible {
     transform: translateX(250px);
-    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
   }
 
   .category-sidebar::-webkit-scrollbar {

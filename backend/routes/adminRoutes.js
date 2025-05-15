@@ -6,8 +6,12 @@ const {
     getAllOrders,
     getOrderById,
     updateOrderStatus,
-    deleteOrder
+    deleteOrder,
 } = require('../controllers/orderController');
+
+const {
+    updateProductStock,
+} = require('../controllers/productController');
 
 // Check admin password
 router.post('/admin-access', checkAdmin);
@@ -23,5 +27,8 @@ router.put('/:orderId/status', updateOrderStatus);
 
 // DELETE order (for admin)
 router.delete('/:orderId', deleteOrder);
+
+// PUT update order stock (for admin)
+router.put('/:id/stock', updateProductStock);
 
 module.exports = router;

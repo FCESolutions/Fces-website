@@ -11,13 +11,17 @@
             <router-link :to="{ name: 'Services' }">Nos Services</router-link>
             <router-link :to="{ name: 'Projects' }">Nos Projets</router-link>
             <router-link :to="{ name: 'Products' }">Nos Produits</router-link>
-            
           </nav>
         </div>
-        <div class="footer-cta">
-          <h4>Froid, climatisation et énérgie solaire</h4>
+        
+        <div class="footer-right">
+          <div class="footer-cta">
+            <h4>Froid, climatisation et énérgie solaire</h4>
+            <WhatsAppButton class="footer-whatsapp" />
+          </div>
         </div>
       </div>
+      
       <div class="footer-bottom">
         <div class="footer-links">
           <a href="#">Politique de confidentialité</a>
@@ -29,6 +33,10 @@
     </div>
   </footer>
 </template>
+
+<script setup>
+import WhatsAppButton from '@/components/WhatsappButton.vue' 
+</script>
 
 <style scoped>
 .footer {
@@ -120,12 +128,37 @@
   align-items: flex-end;
 }
 
-.footer-cta h4 {
-  font-size: 16px;
-  font-weight: 500;
-  color: #ccc;
-  max-width: 260px;
-  line-height: 1.5;
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.footer-cta {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.footer-whatsapp {
+  margin-top: 15px;
+  background-color: transparent;
+  border: 2px solid #25d366;
+  color: #25d366;
+  transition: all 0.3s ease;
+}
+
+.footer-whatsapp:hover {
+  background-color: #25d366;
+  box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
+  color: white;
+}
+
+.footer-whatsapp .icon {
+  color: inherit;
 }
 
 .footer-bottom {
@@ -162,35 +195,20 @@
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .footer {
-    padding: 50px 0 30px;
+  .footer-right {
+    width: 100%;
   }
   
-  .footer-top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 30px;
-    padding-bottom: 30px;
-  }
-
-  .footer-left {
-    gap: 15px;
-  }
-
-  .footer-nav {
-    gap: 15px;
-    margin-top: 5px;
-  }
-
   .footer-cta {
     align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .footer-whatsapp {
+    margin-top: 10px;
   }
 
-  .footer-cta h4 {
-    max-width: 100%;
-  }
-
-  .footer-bottom {
+    .footer-bottom {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
@@ -202,34 +220,11 @@
   }
 }
 
+/* WhatsApp button specific mobile styles */
 @media (max-width: 480px) {
-  .footer {
-    padding: 40px 0 25px;
-  }
-
-  .logo p {
-    font-size: 2.5rem;
-  }
-
-  .logo p::after {
-    font-size: 2.1rem;
-    bottom: -0.3rem;
-    right: -0.5rem;
-  }
-
-  .footer-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .footer-links {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .footer-container {
-    padding: 0 15px;
+  .footer-whatsapp {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

@@ -11,6 +11,12 @@
       <router-link :to="{ name: 'Projects' }" @click="closeMenu">Nos projets</router-link>
       <router-link :to="{ name: 'Contact' }" @click="closeMenu">Contactez-nous</router-link>
     </div>
+      
+    <div class="whatsapp-container desktop-only">
+      <WhatsapButton class="whatsapp-btn" />
+    </div>
+
+
 
     <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
       <span :class="['hamburger-line', { 'line-1-open': isMenuOpen }]"></span>
@@ -24,6 +30,8 @@
 import logoImg from '../assets/logo.jpg'
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import WhatsapButton from './WhatsappButton.vue'
 
 const router = useRouter()
 
@@ -102,8 +110,8 @@ onBeforeUnmount(() => {
 /* Navigation Links */
 .nav-links {
   display: flex;
-  align-items: center;
-  gap: 2.5rem;
+  align-items: flex-end;
+  gap: 2rem;
   transition: right 0.3s ease-in-out;
   z-index: 2000;
 }
@@ -155,6 +163,8 @@ onBeforeUnmount(() => {
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+
+
 /* Hamburger Menu - Hidden by default */
 .hamburger {
   display: none;
@@ -203,6 +213,30 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 768px) {
+  .whatsapp-container {
+    display: none; /* Hide desktop version */
+  }
+
+  .nav-links.mobile-menu-open + .whatsapp-container {
+    display: flex;
+    position: fixed;
+    bottom: 25px;
+    right: 75px;
+    z-index: 2100;
+    animation: slideUpFadeIn 0.5s ease-out 0.3s both;
+  }
+
+  @keyframes slideUpFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .navbar {
     padding: 0 7%;
     height: 80px;
@@ -215,7 +249,7 @@ onBeforeUnmount(() => {
     right: -100%;
     width: 70%;
     max-width: 300px;
-    height: 100vh;
+    height: 90vh;
     background-color: white;
     flex-direction: column;
     justify-content: center;
@@ -223,8 +257,9 @@ onBeforeUnmount(() => {
     gap: 2.5rem;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
     padding: 80px 0;
+    transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  
+
   .nav-links.mobile-menu-open {
     right: 0;
   }
@@ -232,6 +267,21 @@ onBeforeUnmount(() => {
   .nav-links a {
     font-size: 1.2rem;
     padding: 0.5rem 1rem;
+  }
+
+  /* Explicitly reset any styles that might affect the button */
+  .nav-links .whatsapp-btn,
+  .nav-links .whatsapp-btn:hover {
+    text-decoration: none !important;
+    background: initial !important;
+    color: initial !important;
+    padding: initial !important;
+    position: initial !important;
+  }
+  
+  .nav-links .whatsapp-btn::before,
+  .nav-links .whatsapp-btn:hover::before {
+    content: none !important;
   }
   
   .hamburger {
@@ -242,6 +292,12 @@ onBeforeUnmount(() => {
   .logo-img {
     height: 48px;
   }
+}
+
+/* Ensure WhatsApp button stays visible when scrolled */
+.navbar.scrolled .whatsapp-container {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (max-width: 480px) {
