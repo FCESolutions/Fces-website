@@ -28,8 +28,7 @@ exports.getAllCategoriesWithSubcategories = async (req, res) => {
           subcategories.map(async (subcategory) => {
             // Get all subsubcategories for this subcategory
             const subsubcategories = await Subsubcategory.find({ 
-              category_id: category._id,
-              subcategory_id: subcategory._id 
+              subcategory_id: subcategory._id // Only need subcategory_id here
             }).sort('subsubcategory_name');
             
             return {
@@ -37,11 +36,14 @@ exports.getAllCategoriesWithSubcategories = async (req, res) => {
               subcategory_name: subcategory.subcategory_name,
               subcategory_url: subcategory.subcategory_url,
               subcategory_image_url: subcategory.subcategory_image_url,
+              category_id: category._id, // Include parent category ID
               subsubcategories: subsubcategories.map((subsubcategory) => ({
                 _id: subsubcategory._id,
                 subsubcategory_name: subsubcategory.subsubcategory_name,
                 subsubcategory_url: subsubcategory.subsubcategory_url,
-                subsubcategory_image_url: subsubcategory.subsubcategory_image_url
+                subsubcategory_image_url: subsubcategory.subsubcategory_image_url,
+                category_id: category._id, // Include root category ID
+                subcategory_id: subcategory._id // Include parent subcategory ID
               }))
             };
           })

@@ -8,13 +8,14 @@
         placeholder="Search products or categories..."
         class="search-input"
         @keyup.esc="clearSearch"
-        @focus="isFocused = true"
+        @focus="handleFocus"
         @blur="handleBlur"
+        @mousedown="handleMouseDown"
       />
     </div>
 
     <div 
-      v-if="searchTerm.trim() && isFocused" 
+      v-if="(searchTerm.trim() && isFocused) || filteredResults.length > 0" 
       class="search-results-dropdown"
       @mousedown.prevent
     >
@@ -35,7 +36,7 @@
             </div>
             <div v-else-if="item.type === 'product'">
               <h4 v-html="highlightMatch(item.data.product_name)"></h4>
-              <p>Product - {{ formatPrice(item.data.product_price) }}</p>
+              <p>Product</p>
             </div>
           </div>
         </template>
@@ -63,13 +64,7 @@ const emit = defineEmits(['navigate-state', 'search-state'])
 
 const searchTerm = ref('')
 const isFocused = ref(false)
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'MAD'
-  }).format(price)
-}
+const clickedItem = ref(false);
 
 const filteredResults = computed(() => {
   const keyword = searchTerm.value.trim().toLowerCase()
@@ -97,6 +92,7 @@ const filteredResults = computed(() => {
 })
 
 const handleItemClick = (item) => {
+  clickedItem.value = true;
   emit('navigate-state', { type: item.type, data: item.data })
   searchTerm.value = ''
   isFocused.value = false
@@ -108,10 +104,24 @@ const clearSearch = () => {
 }
 
 const handleBlur = () => {
-  setTimeout(() => {
-    isFocused.value = false
-  }, 200)
-}
+  // Only hide if not clicking on a result item
+  if (!clickedItem.value) {
+    setTimeout(() => {
+      isFocused.value = false;
+    }, 200);
+  }
+  clickedItem.value = false;
+};
+
+const handleFocus = () => {
+  isFocused.value = true;
+  clickedItem.value = false;
+};
+
+const handleMouseDown = () => {
+  // Prevent blur from triggering when clicking the input
+  clickedItem.value = true;
+};
 
 const highlightMatch = (text) => {
   const keyword = searchTerm.value.trim()

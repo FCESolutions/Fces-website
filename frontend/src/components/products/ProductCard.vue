@@ -45,7 +45,7 @@ const router = useRouter()
 const route = useRoute()
 
 const handleClick = () => {
-  emit('navigate', props.product._id)
+  emit('navigate', props.product)
 }
 
 const proceedToCheckout = (event) => {

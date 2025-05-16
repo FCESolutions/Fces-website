@@ -27,7 +27,7 @@ const productStore = useProductStore()
 const emit = defineEmits(['navigate'])
 
 const handleClick = () => {
-  emit('navigate', props.category._id)
+  emit('navigate', props.category)
   productStore.setActiveCategory(props.category._id)
 }
 </script>

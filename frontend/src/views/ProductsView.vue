@@ -319,16 +319,16 @@ const handleNavigation = (payload) => {
   nextTick(() => {
     switch(payload.type) {
       case 'category':
-        goToCategory(payload.data._id);
+        goToCategory(payload.data);
         break;
       case 'subcategory':
-        goToSubcategory(payload.data._id);
+        goToSubcategory(payload.data);
         break;
       case 'subsubcategory':
-        goToSubSubcategory(payload.data._id);
+        goToSubSubcategory(payload.data);
         break;
       case 'product':
-        goToProduct(payload.data._id);
+        goToProduct(payload.data);
         break;
     }
   });
@@ -340,35 +340,37 @@ const handleNavigation = (payload) => {
   }, 100)
 }
 
-const goToCategory = (categoryId) => {
-  router.push({ name: 'ProductsByCategory', params: { categoryId } })
+const goToCategory = (category) => {
+  router.push({ 
+    name: 'ProductsByCategory', 
+    params: { categoryId: category._id } })
 }
 
-const goToSubcategory = (subcategoryId) => {
+const goToSubcategory = (subcategory) => {
   router.push({
     name: 'ProductsBySubcategory',
     params: {
-      categoryId: route.params.categoryId,
-      subcategoryId,
+      categoryId: subcategory.category_id,
+      subcategoryId: subcategory._id,
     }
   })
 }
 
-const goToSubSubcategory = (subsubcategoryId) => {
+const goToSubSubcategory = (subsubcategory) => {
   router.push({
     name: 'ProductsBySubsubcategory',
     params: {
-      categoryId: route.params.categoryId,
-      subcategoryId: route.params.subcategoryId,
-      subsubcategoryId,
+      categoryId: subsubcategory.category_id,
+      subcategoryId: subsubcategory.subcategory_id,
+      subsubcategoryId: subsubcategory._id,
     }
   })
 }
 
-const goToProduct = (productId) => {
+const goToProduct = (product) => {
   router.push({
     name: 'ProductDetails',
-    params: { productId },
+    params: { productId: product._id },
     query: { from: router.currentRoute.value.fullPath }
   })
 }
