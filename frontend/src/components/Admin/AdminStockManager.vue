@@ -63,10 +63,10 @@
                 <label>
                     Stock:
                     <input 
-                    type="number" 
-                    v-model.number="product.stock" 
-                    min="0" 
-                    class="stock-input"
+                      type="number" 
+                      v-model.number="product.stock" 
+                      min="0" 
+                      class="stock-input"
                     />
                 </label>
                 <button @click="updateStock(product)" class="update-btn">
@@ -304,10 +304,23 @@ watch(selectedSubcategory, () => {
 
 .stock-input {
   width: 80px;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.5rem 0;
+  border: none;
+  border-bottom: 2px solid #2F8F9D;
+  background: transparent;
   text-align: center;
+  font-size: 1rem;
+  color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.stock-input:focus {
+  outline: none;
+  border-bottom-color: #227a86; /* slightly darker shade for focus */
+}
+
+.stock-input::placeholder {
+  color: #aaa;
 }
 
 .update-btn {

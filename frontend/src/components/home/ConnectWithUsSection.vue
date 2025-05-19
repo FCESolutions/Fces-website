@@ -1,35 +1,35 @@
 <template>
   <section class="connect-section">
-    <div class="connect-container">
-      <h4 class="subtitle">Contactez-nous</h4>
-      <h2 class="title">Contactez notre équipe</h2>
-      <p class="description">Nous sommes là pour vous aider avec toutes vos questions.</p>
-
-      <div class="cards">
-        <!-- Email -->
+    <div class="cards">
+      <!-- Email Card -->
+      <a href="mailto:fces.maroc@gmail.com" class="card-link">
         <div class="card">
           <Icon icon="mdi:email-outline" class="icon" />
           <h3>Envoyez-nous un email</h3>
           <p>Notre équipe de support est prête à vous aider.</p>
-          <a class="email-link" href="mailto:contact@fces.com">fces.maroc@gmail.com</a>
+          <p class="contact-detail">fces.maroc@gmail.com</p>
         </div>
+      </a>
 
-        <!-- Call -->
+      <!-- Call Card -->
+      <a href="https://wa.me/212614116655" target="_blank" rel="noopener" class="card-link">
         <div class="card">
           <Icon icon="mdi:phone-outline" class="icon" />
           <h3>Appelez-nous</h3>
           <p>Disponible du lundi au vendredi, de 8h à 17h.</p>
-          <p class="contact-detail">+212 614-116655</p>
+          <p class="contact-detail">0614-116655</p>
         </div>
+      </a>
 
-        <!-- Visit Us -->
+      <!-- Location Card (optional: could link to Google Maps) -->
+      <a href="https://maps.app.goo.gl/6CijUZ3pxZ8vH4kN7" target="_blank" rel="noopener" class="card-link">
         <div class="card">
           <Icon icon="mdi:map-marker-outline" class="icon" />
           <h3>Visitez-nous</h3>
           <p>Venez nous rendre visite dans nos bureaux.</p>
           <p class="contact-detail">14 RUE BORDEAUX QUARTIER L'HÔPITAL, Safi, Maroc</p>
         </div>
-      </div>
+      </a>
     </div>
   </section>
 </template>
@@ -95,6 +95,18 @@ import { Icon } from '@iconify/vue';
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-link:hover .card {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
 .icon {
   font-size: 32px;
   color: #3b82f6;
@@ -128,10 +140,19 @@ import { Icon } from '@iconify/vue';
   transform: scale(1.02);
 }
 
+
 .contact-detail {
-  color: #333;
+  color: #444;
   font-weight: 500;
   margin-top: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card-link:hover .contact-detail {
+  color: #3b82f6;
+  transform: scale(1.03);
+  text-decoration: underline;
 }
 
 /* Mobile Responsiveness */

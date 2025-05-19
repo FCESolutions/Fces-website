@@ -2,15 +2,17 @@
   <section class="admin-login">
     <h2>Accès Administrateur</h2>
 
-    <div class="input-wrapper">
-      <input
-        :type="showPassword ? 'text' : 'password'"
-        v-model="password"
-        placeholder="Entrez le mot de passe administrateur"
-      />
-    </div>
+    <form @submit.prevent="handleLogin">
+      <div class="input-wrapper">
+        <input
+          :type="showPassword ? 'text' : 'password'"
+          v-model="password"
+          placeholder="Entrez le mot de passe administrateur"
+        />
+      </div>
 
-    <button class="login-btn" @click="handleLogin">Accéder aux commandes</button>
+      <button type="submit" class="login-btn">Accéder aux commandes</button>
+    </form>
 
     <p v-if="error" class="error">{{ error }}</p>
 
@@ -43,7 +45,8 @@ const handleLogin = async () => {
       success.value = false
     }, 2000)
   } catch (err) {
-    error.value = 'Mot de passe incorrect ou erreur lors de la récupération des commandes.'  }
+    error.value = err?.response?.data?.message || 'Mot de passe incorrect ou erreur lors de la récupération des commandes.'  
+  }
 }
 </script>
 

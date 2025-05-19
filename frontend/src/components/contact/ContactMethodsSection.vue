@@ -5,15 +5,15 @@
       <div class="info">
         <div class="line">
           <i class="fa-solid fa-envelope"></i>
-          <span>fces.maroc@gmail.com</span>
+          <a href="mailto:fces.maroc@gmail.com">fces.maroc@gmail.com</a>
         </div>
         <div class="line">
           <i class="fa-solid fa-phone"></i>
-          <span>+212 6 14 11 66 55</span>
+          <a href="https://wa.me/212614116655" target="_blank" rel="noopener">06 14 11 66 55</a>
         </div>
         <div class="line">
           <i class="fa-solid fa-location-dot"></i>
-          <span>14 RUE BORDEAUX QUARTIER L’HÔPITAL , Safi, Maroc</span>
+          <a href="https://maps.app.goo.gl/6CijUZ3pxZ8vH4kN7" target="_blank" rel="noopener">14 RUE BORDEAUX QUARTIER L’HÔPITAL , Safi, Maroc</a>
         </div>
       </div>
     </div>
@@ -64,6 +64,19 @@
   color: #7A8B74;
   font-size: 1.2rem;
 }
+
+.info a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.info a:hover {
+  color: #2F8F9D; /* your accent color */
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 
 /* Right Panel: Slogan Section */
 .contact-right {

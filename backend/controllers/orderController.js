@@ -1,5 +1,4 @@
 const express = require('express');
-const router = express.Router();
 const Order = require('../models/Order');
 const nodemailer = require('nodemailer')
 require('dotenv').config();
@@ -52,6 +51,7 @@ exports.createOrder =  async (req, res) => {
       const order = new Order(req.body);
       await order.save();
 
+      console.log('Email user:', process.env.EMAIL_USER); 
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: process.env.EMAIL_USER,
@@ -75,10 +75,16 @@ exports.createOrder =  async (req, res) => {
         `
       };
 
-      await transporter.sendMail(mailOptions)
+        try {
+          await transporter.sendMail(mailOptions);
+        } catch (mailErr) {
+          console.error('Email sending failed:', mailErr.message);
+          // You could optionally log this somewhere persistent
+        }
 
       res.status(201).send(order);
     } catch (error) {
+      console.error("Order creation error:", error);
       res.status(400).send(error);
     }
 
