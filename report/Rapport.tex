@@ -1,0 +1,390 @@
+\documentclass[12pt]{report}
+
+% -------------------------------
+% --- Packages (General Use) ---
+% -------------------------------
+\usepackage[utf8]{inputenc}        % UTF-8 encoding
+\usepackage[T1]{fontenc}           % Correct accented characters
+\usepackage[french]{babel}         % French language support
+\usepackage{graphicx}              % For images
+\usepackage{subcaption}            % For subfigures
+\usepackage{xcolor}                % Color customization
+\usepackage{geometry}              % Page margins
+\usepackage{ragged2e}              % Justification
+\usepackage{fancyhdr}              % Header/footer customization
+\usepackage{etoolbox}              % Adds logic/patching tools
+\usepackage{titlesec}              % Customize section styles
+\usepackage{titling}               % Needed for custom section formatting
+\usepackage{setspace}              % For line spacing
+\usepackage{float}                 % For figure placement
+\usepackage{lmodern}               % Modern, readable font
+\usepackage{etoolbox}              % Adds logic/patching tools
+
+
+% ------------------------------
+% --- Page Layout Settings ---
+% ------------------------------
+\geometry{
+    a4paper,
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm
+}
+
+% ------------------------------
+% --- Header & Footer Setup ---
+% ------------------------------
+\pagestyle{fancy}
+\fancyhf{}                        % Clear default header/footer
+\fancyfoot[C]{\thepage}          % Page number in center footer
+\renewcommand{\headrulewidth}{0pt}  % Remove header line
+
+% --------------------------
+% --- Custimized Commands ---
+% --------------------------
+\newcommand{\rqm}{\textquoteright}  % Right quote mark
+\AtBeginDocument{
+  \pretocmd{\section}{\clearpage}{}{}
+} % Automatically insert a page break before each \section
+\onehalfspacing  % ~1.5 line spacing (use \doublespacing for double)
+
+
+% -------------------------------------
+% --- Section Style Customization ---
+% -------------------------------------
+\definecolor{maincolor}{RGB}{100, 130, 160}  % Steel Blue
+\definecolor{linecolor}{RGB}{30, 45, 80}    % Midnight Blue
+
+% --- Section Numbering ---
+\renewcommand\thesection{\arabic{section}}
+\renewcommand\thesubsection{\thesection.\arabic{subsection}}
+\renewcommand\thesubsubsection{\thesubsection.\arabic{subsubsection}}
+
+% --- Section ---
+\titleformat{\section}
+  {\normalfont\fontsize{22pt}{24pt}\bfseries\color{maincolor}}
+  {\thesection}{1em}{}
+
+% --- Subsection ---
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{maincolor!80!black}}
+  {\thesubsection}{1em}{}
+
+% --- Subsubsection ---
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{maincolor!60!black}}
+  {\thesubsubsection}{1em}{}
+
+% Save original \section command for use in unstyled sections (e.g., Résumé, Références)
+\let\oldsection\section
+
+
+% Redefine \section to vertically center titles with prefix, wrapped, spaced lines, and TOC entry
+\renewcommand{\section}[1]{%
+  \refstepcounter{section}
+  \addcontentsline{toc}{section}{Section~\thesection:~#1} % <-- TOC entry
+  \clearpage
+  \thispagestyle{fancy}
+  \vspace*{0.4\textheight}
+  \begin{center}
+    \parbox{0.8\linewidth}{%
+      \centering
+      \setstretch{2.2} % Line spacing between wrapped lines
+      {\color{maincolor}\fontsize{22pt}{24pt}\bfseries Section~\thesection:~#1}%
+    }\\[0.7em]
+    {\color{linecolor}\rule{0.8\linewidth}{1pt}} % <-- colored rule
+  \end{center}
+  \vspace*{0.4\textheight}
+}
+
+% Subsection styling (simple, smaller but with same tone)
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{maincolor!80!black}}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{maincolor!70!black}}
+  {\thesubsubsection}{1em}{}
+
+
+
+% ----------------------------
+% --- TOC and Lists Setup ---
+% ----------------------------
+\renewcommand{\contentsname}{\textcolor{maincolor}{\textbf{Table des Matières}}}
+\renewcommand{\listfigurename}{\textcolor{maincolor}{\textbf{Liste des Figures}}}
+\setcounter{tocdepth}{3}  % Include subsubsections in TOC
+
+% --------------------------
+% --- Title Page Setup ---
+% --------------------------
+\makeatletter
+\renewcommand{\maketitle}{}  % Disable default \maketitle
+\makeatother
+
+% --- Title Page Placeholder ---
+\newcommand{\customtitlepage}{
+    \begin{titlepage}
+        \centering
+        \vspace*{2cm}
+
+        {\Huge\bfseries\color{maincolor}Titre du Rapport}\\[1.5cm]
+        {\Large\itshape Nom de l'Étudiant(e)}\\
+        {\large Encadré par : Prénom Nom}\\[2cm]
+
+        {\large Projet de fin d’études}\\[0.5cm]
+        {\large Département Informatique}\\
+        {\large Année Universitaire 2024–2025}
+
+        \vfill
+
+        %{\includegraphics[width=0.3\textwidth]{./imgs/logo.png}}\\
+        \vspace{0.5cm}
+        {\large Université XYZ}
+
+        \vfill
+    \end{titlepage}
+}
+
+% --------------------------
+% --- Document Starts Here ---
+% --------------------------
+\begin{document}
+
+\customtitlepage
+
+\thispagestyle{fancy}
+\setcounter{page}{1}
+
+\begin{center}
+\vspace*{\fill}
+
+\oldsection*{\textcolor{maincolor}{Résumé}}
+\justifying
+\large
+
+Le présent projet porte sur la conception et le développement d\rqm{}un site web vitrine dédié à la société \textbf{FCES – Froid, Climatisation et Énergie Solaire}, spécialisée dans les solutions énergétiques durables, la climatisation et les équipements de froid.
+
+\vspace{1em}
+
+L\rqm{}objectif principal de cette plateforme est de créer un pont de communication efficace entre l\rqm{}entreprise et ses clients, à travers une interface moderne, intuitive et accessible à tous les profils d\rqm{}utilisateurs.
+
+\vspace{1em}
+
+En plus de présenter les produits et services de l\rqm{}entreprise, le site permet aux clients de passer des commandes en ligne de manière simple, via un formulaire dédié, sans obligation de création de compte. Cette simplicité d\rqm{}utilisation le rend adapté à une clientèle variée, professionnelle ou particulière.
+
+\vspace{1em}
+
+Du côté administratif, un panneau de gestion sécurisé a été mis en place. Il offre à l\rqm{}entreprise la possibilité de gérer les commandes, de suivre l\rqm{}état du stock des produits, et de mettre à jour son catalogue selon une hiérarchie flexible de catégories et sous-catégories.
+
+\vspace{1em}
+
+Le site a été pensé pour allier performance, adaptabilité et ergonomie, tout en répondant aux besoins spécifiques de FCES.
+
+\vspace{1em}
+
+Ce projet a été réalisé sous la supervision de \rule{5cm}{0.4pt} (à compléter), en collaboration avec une entreprise spécialisée dans le domaine des technologies de l\rqm{}information.
+
+\vspace*{\fill}
+\end{center}
+
+{
+\titleformat{\section}{\normalfont\Huge}{}{0pt}{}  % Reset style for TOC if needed
+\tableofcontents
+\listoffigures
+}
+\clearpage
+
+\section{Introduction Générale}
+\large
+\justifying
+\clearpage
+
+Dans un contexte mondial où les enjeux liés à l\rqm{}énergie, à l\rqm{}environnement et à l\rqm{}efficacité technologique prennent une ampleur croissante, les entreprises spécialisées dans les solutions énergétiques durables se doivent d\rqm{}adopter des outils numériques modernes pour renforcer leur visibilité et améliorer leur relation client.
+
+\vspace{1em}
+
+C\rqm{}est dans cette optique que le présent projet s\rqm{}inscrit. Il consiste en la conception et le développement d\rqm{}un site web dynamique dédié à la société \textbf{FCES – Froid, Climatisation et Énergie Solaire}. Ce site vitrine vise à présenter les produits et services de l\rqm{}entreprise tout en facilitant les échanges avec les clients grâce à une interface simple, intuitive et accessible à tous.
+
+\vspace{1em}
+
+Au-delà de sa fonction informative, le site offre la possibilité aux clients de passer des commandes en ligne via un formulaire sans nécessiter la création d\rqm{}un compte utilisateur. Du côté administratif, une interface de gestion permet à l\rqm{}entreprise de suivre les commandes, de mettre à jour les stocks et de gérer le catalogue de produits de manière autonome.
+
+\vspace{1em}
+
+Ce projet s\rqm{}est déroulé sous la supervision de \rule{5cm}{0.4pt} (à compléter), en collaboration avec une entreprise spécialisée dans le développement informatique, et vise à répondre de manière concrète aux besoins numériques actuels de FCES.
+
+
+
+\section{Présentation de l'organisme}
+\clearpage
+
+\subsection{FCES AND SALVIA}
+
+\section{Analyse des besoins}
+\clearpage
+\subsection{Besoins fonctionnels}
+
+\subsection{Besoins non-fonctionnels}
+
+\section{Conception}
+\clearpage
+
+\subsection{UML}
+
+\vspace{1cm}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./imgs/umlLogo.png}
+    \caption{UML Logo}
+    \label{fig:uml_logo}
+\end{figure}
+
+\subsection{Diagramme des cas d'utilisation}
+
+\subsection{Diagramme de classe}
+
+\section{Outils et Langages utilisés}
+\clearpage
+\subsection{Introduction}
+
+Ce chapitre présente l'écosystème technologique choisi pour le développement de notre plateforme de gestion de CV. La sélection des outils s'est basée sur :
+
+\begin{itemize}
+    \item Les exigences techniques identifiées dans l'analyse des besoins
+    \item La compatibilité entre les différents composants
+    \item Les compétences acquises dans le cadre de notre formation
+\end{itemize}
+
+Notre solution combine des technologies modernes pour le frontend, le backend et la gestion des données. Ce choix technologique permet une séparation claire des responsabilités tout en garantissant une bonne maintenabilité du projet.
+
+\subsection{Outils}
+
+\subsubsection{React}
+Framework JavaScript pour interfaces utilisateurs. Choisi pour :
+\begin{itemize}
+    \item Architecture composants réutilisables
+    \item Gestion d'état efficace (hooks, contexte)
+    \item Large écosystème de librairies complémentaires
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{./imgs/reactLogo.jpg}
+    \caption{Logo de React}
+    \label{fig:react}
+\end{figure}
+
+\subsubsection{Express.js}
+Framework web minimaliste pour Node.js. Sélectionné pour :
+\begin{itemize}
+    \item Création rapide d'API REST
+    \item Middleware modulable
+    \item Compatibilité avec les drivers MongoDB
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{./imgs/expressLogo.jpg}
+    \caption{Logo d’Express.js}
+    \label{fig:express}
+\end{figure}
+
+\subsubsection{MongoDB}
+Base de données NoSQL orientée documents. Adoptée car :
+\begin{itemize}
+    \item Schéma flexible adapté aux CV personnalisés
+    \item Requêtes JSON natives
+    \item Scaling horizontal aisé
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{./imgs/mongodbLogo.jpg}
+    \caption{Logo de MongoDB}
+    \label{fig:mongodb}
+\end{figure}
+
+\subsubsection{Visual Studio Code}
+EDI moderne par Microsoft. Utilisé grâce à :
+\begin{itemize}
+    \item Support excellent du JavaScript/TypeScript
+    \item Extensions LaTeX et UML pertinentes
+    \item Débogueur intégré pour le full-stack
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{./imgs/vscodeLogo.jpg}
+    \caption{Logo de Visual Studio Code}
+    \label{fig:vscode}
+\end{figure}
+
+\subsubsection{Codeium}
+Assistant d'Intelligence Artificielle pour le développement. Intégré dans notre workflow pour :
+\begin{itemize}
+    \item Génération et complétion de code intelligent
+    \item Optimisation des algorithmes clés
+    \item Détection des vulnérabilités potentielles
+    \item Accélération du développement des composants React et Express
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{./imgs/codeiumLogo.jpg}
+    \caption{Logo de Codeium}
+    \label{fig:codeium}
+\end{figure}
+
+\subsubsection{StarUML}
+Logiciel de modélisation UML. Choisi pour :
+\begin{itemize}
+    \item Génération automatique de diagrammes
+    \item Export PNG/PDF de qualité
+    \item Gratuit pour les projets académiques
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{./imgs/starumlLogo.jpg}
+    \caption{Logo de StarUML}
+    \label{fig:staruml}
+\end{figure}
+
+\subsubsection{Git}
+Système de contrôle de version distribué. Utilisé pour :
+\begin{itemize}
+    \item Gestion collaborative du code source
+    \item Suivi des modifications et historisation du projet
+    \item Organisation en branches (main, développement, features)
+    \item Intégration avec la plateforme GitHub pour le stockage distant
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{./imgs/gitLogo.jpg}
+    \caption{Logo de Git}
+    \label{fig:git}
+\end{figure}
+
+\section{Implémentation du Projet}
+\clearpage
+\subsection{Introduction}
+
+\subsection{Application web}
+
+\subsection{Compatibilité Mobile}
+
+\subsection{Conclusion}
+
+\section{Conclusion Générale}
+\clearpage
+
+\oldsection*{Références}
+
+\addcontentsline{toc}{section}{Références}  % Add Références to TOC
+
+
+\end{document}
