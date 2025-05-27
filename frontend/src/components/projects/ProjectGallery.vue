@@ -13,120 +13,78 @@
       >
         <div class="project-header">
           <h3 class="project-title">{{ project.title }}</h3>
-          <div class="project-badge" v-if="project.title.includes('en cours')">En cours</div>
+          <div class="project-badge" v-if="project.isInProgress">En cours</div>
         </div>
 
         <!-- Multiple images -->
-        <div v-if="Array.isArray(project.image)" class="multi-image-scroll-wrapper">
-          <div class="multi-image-scroll" :class="{ 'center-content': project.image.length <= 3 }">
+        <div v-if="Array.isArray(project.images)" class="multi-image-scroll-wrapper">
+          <div class="multi-image-scroll" :class="{ 'center-content': project.images.length <= 3 }">
             <div
-              v-for="(imgObj, i) in project.image"
+              v-for="(imgObj, i) in project.images"
               :key="i"
               class="scroll-img-wrapper"
             >
               <div class="image-container">
                 <img
-                  :src="typeof imgObj === 'string' ? imgObj : imgObj.src"
+                  :src="getImageUrl(imgObj.imageId)"
                   :alt="`${project.title} - ${i + 1}`"
                   class="scroll-img"
+                  @error="(e) => e.target.style.display = 'none'"
                 />
                 <div class="image-overlay"></div>
               </div>
-              <div
-                v-if="imgObj.desc"
-                class="img-description"
-              >{{ imgObj.desc }}</div>
+              <div v-if="imgObj.description" class="img-description">
+                {{ imgObj.description }}
+              </div>
             </div>
           </div>
         </div>
+
 
         <!-- Single image -->
         <div v-else class="single-image-block">
           <div class="image-container">
             <img
-              :src="project.image"
+              :src="getImageUrl(project.images[0]?.imageId)"
               :alt="project.title"
               class="single-img"
+              @error="(e) => e.target.style.display = 'none'"
             />
             <div class="image-overlay"></div>
           </div>
         </div>
+
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import champsPv50kw1 from '@/assets/imgs/champsPv-50kw-1.jpg'
-import champsPv50kw2 from '@/assets/imgs/champsPv-50kw-2.jpg'
-import champsPv50kw3 from '@/assets/imgs/champsPv-50kw-3.jpg'
-import champsPv50kw4 from '@/assets/imgs/champsPv-50kw-4.jpg'
+import { ref, onMounted } from 'vue'
+import api from '@/api'
 
-import systemeSolaireHybride16kw from '@/assets/imgs/systemeSolaireHybride-16kw.jpg'
-import systemeSolaireHybride14kwc from '@/assets/imgs/systemeSolaireHybride-14kwc.jpg'
-import systemeSolaireHybride12kwAC from '@/assets/imgs/systemeSolaireHybride-12kw-AC.jpg'
-import systemeSolaireHybride4kwc from '@/assets/imgs/systemeSolaireHybride-4kwc.jpg'
-import systemeSolaireHybride3kw from '@/assets/imgs/systemeSolaireHybride-3kw.jpg'
-import systemeSolaireHybride19kwc from '@/assets/imgs/systemeSolaireHybride-19kwc.jpg'
+// Reactive projects array
+const projects = ref([])
 
-import pompageSolaire300kw from '@/assets/imgs/pompageSolaire-300kw.jpg'
-import pompageSolaire300kw2 from '@/assets/imgs/pompageSolaire-300kw-2.jpg'
+// Fetch projects from DB
+const fetchProjects = async () => {
+  try {
+    const response = await api.getAllProjects()
+    projects.value = response.data
+  } catch (error) {
+    console.error('Failed to load projects:', error)
+  }
+}
 
-import pompageSolaire70CV from '@/assets/imgs/pompageSolaire70CV.jpg'
+// Construct image URL from imageId
+const getImageUrl = (imageId) => {
+  return `http://localhost:4000/api/admin/projects/images/${imageId}`
+}
 
-import parkingSolaireMarsaMaroc1 from '@/assets/imgs/parkingSolaireMarsaMarocSafi-1.jpg'
-import parkingSolaireMarsaMaroc2 from '@/assets/imgs/parkingSolaireMarsaMarocSafi-2.jpg'
-import parkingSolaireMarsaMaroc3 from '@/assets/imgs/parkingSolaireMarsaMarocSafi-3.jpg'
-import parkingSolaireMarsaMaroc4 from '@/assets/imgs/parkingSolaireMarsaMarocSafi-4.jpg'
-import parkingSolaireMarsaMaroc5 from '@/assets/imgs/parkingSolaireMarsaMarocSafi-5.jpg'
-
-
-
-const projects = [
-  {
-    title: 'Champs photovoltaïques – Systèmes 50kW',
-    image: [
-      { src:champsPv50kw1},
-      { src: champsPv50kw2},
-      { src: champsPv50kw3},
-      { src: champsPv50kw4},
-    ],
-  },
-  {
-    title: 'Système solaire hybride',
-    image: [
-      { src: systemeSolaireHybride16kw, desc: 'Système solaire hybride – 16kW' },
-      { src: systemeSolaireHybride14kwc, desc: 'Système solaire hybride – 14kWc' },
-      { src: systemeSolaireHybride12kwAC, desc: 'Système solaire hybride – 12kW AC' },
-      { src: systemeSolaireHybride4kwc, desc: 'Système solaire hybride – 4kWc' }, 
-      { src: systemeSolaireHybride3kw, desc: 'Système solaire hybride – 3kW' },
-      { src: systemeSolaireHybride19kwc, desc: 'Système solaire hybride – 19kWc' },
-    ],
-  },
-  {
-    title: 'Système de pompage solaire – 300kW',
-    image: [
-      { src: pompageSolaire300kw},
-      { src: pompageSolaire300kw2}
-      ],
-  },
-  {
-    title: 'Parking solaire à Marsa Maroc de safi - 64kWc (projet en cours)',
-    image: [
-      { src: parkingSolaireMarsaMaroc1},
-      { src: parkingSolaireMarsaMaroc2}, 
-      { src: parkingSolaireMarsaMaroc3},
-      { src: parkingSolaireMarsaMaroc4},
-      { src: parkingSolaireMarsaMaroc5}
-    ],
-  },
-  {
-    title: 'Pompage solaire – 70CV (projet en cours)',
-    image: [
-      { src: pompageSolaire70CV, desc: 'Structure galvanisée solide' }
-    ],
-  },
-]
+// Lifecycle
+onMounted(() => {
+  fetchProjects()
+})
 </script>
 
 <style scoped>

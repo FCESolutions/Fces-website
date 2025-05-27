@@ -9,7 +9,7 @@
         </div>
         <div class="line">
           <i class="fa-solid fa-phone"></i>
-          <a href="https://wa.me/212614116655" target="_blank" rel="noopener">06 14 11 66 55</a>
+          <a href="https://wa.me/212702085182" target="_blank" rel="noopener">07 02 08 51 82</a>
         </div>
         <div class="line">
           <i class="fa-solid fa-location-dot"></i>

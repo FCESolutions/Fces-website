@@ -69,12 +69,11 @@ exports.createSubsubcategory = async (req, res) => {
 
     const subsubcategory = new Subsubcategory({
       subsubcategory_name: req.body.subsubcategory_name,
-      subsubcategory_url: req.body.subsubcategory_url,
       category_id: req.body.category_id,
       category_name: category.category_name,
       subcategory_id: req.body.subcategory_id,
       subcategory_name: subcategory.subcategory_name,
-      subsubcategory_image_url: req.body.subsubcategory_image_url
+      subsubcategory_image_url: req.body.image_url
     });
 
     const newSubsubcategory = await subsubcategory.save();

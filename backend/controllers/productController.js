@@ -94,72 +94,125 @@ exports.getProductById = async (req, res) => {
 // Create new product
 exports.createProduct = async (req, res) => {
   try {
-    // Validate category exists
-    const category = await Category.findById(req.body.category_id);
+    const {
+      category_id,
+      subcategory_id,
+      subsubcategory_id,
+      product_name,
+      description,
+      specifications,
+      marque,
+      product_image_url,
+      external_links,
+      product_files,
+      stock,
+    } = req.body;
+
+    // Validate and fetch category
+    const category = await Category.findById(category_id);
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    // Validate subcategory exists if provided
-    if (req.body.subcategory_id) {
-      const subcategory = await Subcategory.findById(req.body.subcategory_id);
+    // Initialize subcategory and subsubcategory as null
+    let subcategory = null;
+    let subsubcategory = null;
+
+    // Validate and fetch subcategory if provided
+    if (subcategory_id) {
+      subcategory = await Subcategory.findById(subcategory_id);
       if (!subcategory) {
         return res.status(404).json({ message: 'Subcategory not found' });
       }
     }
 
-    // Validate subsubcategory exists if provided
-    if (req.body.subsubcategory_id) {
-      const subsubcategory = await Subsubcategory.findById(req.body.subsubcategory_id);
+    // Validate and fetch subsubcategory if provided
+    if (subsubcategory_id) {
+      subsubcategory = await Subsubcategory.findById(subsubcategory_id);
       if (!subsubcategory) {
         return res.status(404).json({ message: 'Subsubcategory not found' });
       }
     }
 
+    // Create product
     const product = new Product({
-      name: req.body.name,
-      product_name: req.body.product_name || req.body.name,
-      primary_url: req.body.primary_url,
-      source_url: req.body.source_url,
-      category_id: req.body.category_id,
+      product_name: product_name,
+      category_id,
       category_name: category.category_name,
-      subcategory_id: req.body.subcategory_id,
-      subcategory_name: req.body.subcategory_name,
-      subsubcategory_id: req.body.subsubcategory_id,
-      description: req.body.description,
-      specifications: req.body.specifications,
-      price: req.body.price,
-      main_image_url: req.body.main_image_url,
-      product_image_url: req.body.product_image_url,
-      external_links: req.body.external_links,
-      product_files: req.body.product_files
+      subcategory_id: subcategory_id || null,
+      subcategory_name: subcategory ? subcategory.subcategory_name : null,
+      subsubcategory_id: subsubcategory_id || null,
+      subsubcategory_name: subsubcategory ? subsubcategory.subsubcategory_name : null,
+      description,
+      specifications,
+      marque,
+      product_image_url,
+      external_links,
+      product_files,
+      stock,
     });
 
     const newProduct = await product.save();
     res.status(201).json(newProduct);
+
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error('Error creating product:', err);
+    res.status(500).json({ message: 'Failed to create product', error: err.message });
   }
 };
+
 
 // Update product
 exports.updateProduct = async (req, res) => {
   try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Validate the specifications structure if present
+    if (updateData.specifications) {
+      if (typeof updateData.specifications !== 'object' || Array.isArray(updateData.specifications)) {
+        return res.status(400).json({ message: 'Invalid specifications format' });
+      }
+
+      // Optional: Validate each category's structure
+      for (const [categoryName, specs] of Object.entries(updateData.specifications)) {
+        if (typeof specs !== 'object' || specs === null) {
+          return res.status(400).json({ 
+            message: `Invalid specifications format for category ${categoryName}`
+          });
+        }
+      }
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
+      id,
+      updateData,
+      { 
+        new: true,
+        runValidators: true // Ensures updated data follows schema validation
+      }
     )
-      .populate('category_id', 'category_name')
-      .populate('subcategory_id', 'subcategory_name')
-      .populate('subsubcategory_id', 'subsubcategory_name');
-    
+    .populate('category_id', 'category_name')
+    .populate('subcategory_id', 'subcategory_name')
+    .populate('subsubcategory_id', 'subsubcategory_name');
+
     if (!updatedProduct) {
       return res.status(404).json({ message: 'Product not found' });
     }
+
     res.json(updatedProduct);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    // More specific error handling
+    if (err.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid product ID format' });
+    }
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: err.message });
+    }
+    res.status(500).json({ 
+      message: 'Error updating product',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 };
 

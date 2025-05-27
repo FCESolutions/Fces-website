@@ -22,7 +22,7 @@
         class="add-to-cart-btn"
         aria-label="Commander article"
       >
-        Commander Article
+        Commander Article <span v-if="product.stock == 0">- Disponible sur commande</span>
       </button>
     </div>
   </div>

@@ -12,12 +12,12 @@
       </a>
 
       <!-- Call Card -->
-      <a href="https://wa.me/212614116655" target="_blank" rel="noopener" class="card-link">
+      <a href="https://wa.me/212702085182" target="_blank" rel="noopener" class="card-link">
         <div class="card">
           <Icon icon="mdi:phone-outline" class="icon" />
           <h3>Appelez-nous</h3>
           <p>Disponible du lundi au vendredi, de 8h à 17h.</p>
-          <p class="contact-detail">0614-116655</p>
+          <p class="contact-detail">0702-085182</p>
         </div>
       </a>
 

@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 
 const subsubcategorySchema = new Schema({
   subsubcategory_name: { type: String, required: true },
-  subsubcategory_url: { type: String, required: true },
   category_id: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
   category_name: { type: String },
   subcategory_id: { type: Schema.Types.ObjectId, ref: 'Subcategory', required: true },

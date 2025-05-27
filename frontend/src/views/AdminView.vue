@@ -1,7 +1,7 @@
 <template>
-  <AdminLogin v-if="!isAuthenticated" @loginSuccess="handleLoginSuccess" />
-
-  <div v-else class="admin-dashboard">
+  <!-- <AdminLogin v-if="!isAuthenticated" @loginSuccess="handleLoginSuccess" /> -->
+  <!-- add v-eslse when you uncomment the login -->
+  <div class="admin-dashboard">
     <!-- Tabs -->
     <div class="tabs">
       <button 
@@ -16,6 +16,12 @@
       >
         Gestion de stock
       </button>
+      <button 
+        :class="{ active: currentTab === 'projects' }" 
+        @click="currentTab = 'projects'"
+      >
+        Nos Projets
+      </button>
     </div>
 
     <!-- Active Component -->
@@ -29,6 +35,10 @@
       <AdminStockManager 
         v-if="currentTab === 'stock'" 
       />
+
+      <AdminProjectsControl 
+        v-if="currentTab === 'projects'" 
+      />
     </div>
   </div>
 </template>
@@ -37,7 +47,8 @@
 import { ref } from 'vue'
 import AdminLogin from '../components/Admin/AdminLogin.vue'
 import AdminOrders from '../components/Admin/AdminOrders.vue'
-import AdminStockManager from '../components/Admin/AdminStockManager.vue'
+import AdminStockManager from '../components/Admin/products/StockManager.vue'
+import AdminProjectsControl from '../components/Admin/AdminProjectsControl.vue'
 
 const isAuthenticated = ref(false)
 const orders = ref([])

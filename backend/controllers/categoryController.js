@@ -109,8 +109,7 @@ exports.searchItem = async (req, res) => {
 exports.createCategory = async (req, res) => {
   const category = new Category({
     category_name: req.body.category_name,
-    category_url: req.body.category_url,
-    category_image_url: req.body.category_image_url
+    category_image_url: req.body.image_url
   });
 
   try {

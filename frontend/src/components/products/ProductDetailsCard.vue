@@ -4,11 +4,10 @@
 <div class="product-header">
   <h1 class="product-title">{{ product.product_name }}</h1>
   <div class="product-subtitle">
-    <span class="product-price">{{ product.price }}</span>
-    <span class="product-stock-badge" :class="product.stock === 'En stock' ? 'in-stock' : 'out-of-stock'">
-        {{ product.stock > 0 ? 'En stock' : 'Rupture de stock' }}
+    <span class="product-price">Marque: {{ product.marque }}</span>
+    <span class="product-stock-badge" :class="product.stock === 'En stock' ? 'in-stock' : 'out-of-stock'" v-if="product.stock > 0">
         <template v-if="product.stock > 0">
-          — {{ product.stock }} article{{ product.stock > 1 ? 's' : '' }}
+          {{ product.stock }} article disponible{{ product.stock > 1 ? 's' : '' }}
         </template>
     </span>
   </div>
@@ -30,7 +29,7 @@
           class="add-to-cart-btn"
           aria-label="Commander article"
         >
-          Commander Article
+           Commander Article <span v-if="product.stock == 0">- Disponible sur commande</span>
         </button>
       </div>
 
@@ -67,7 +66,7 @@
           <div class="specs-container">
             <template v-for="(specGroup, groupName) in product.specifications" :key="groupName">
               <!-- Group Title -->
-              <h3 v-if="groupName !== 'specs'" class="spec-group-title">{{ groupName }}</h3>
+              <h3 v-if="groupName !== 'specs'" class="spec-section-header">{{ groupName }}</h3>
               
               <!-- For each specification group -->
               <div v-if="typeof specGroup === 'object' && !Array.isArray(specGroup)" class="spec-group">
@@ -127,7 +126,7 @@
               class="external-link-btn"
             >
               <Icon icon="heroicons-outline:link" class="icon" />
-              {{ link.label }} - {{ link.text }}
+              {{ link.label }}
             </a>
           </div>
         </div>
@@ -314,20 +313,13 @@ const proceedToCheckout = (event) => {
 .spec-section-header {
   grid-column: 1 / -1;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.2rem;
   margin: 1rem 0 0.5rem;
   padding: 0.5rem 0.8rem;
   background-color: #edf2f7;
   border-left: 4px solid #3182ce;
   color: #2c5282;
   border-radius: 4px;
-}
-
-.spec-group-title {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin: 1rem 0;
-  color: #2d3748;
 }
 
 .spec-item {

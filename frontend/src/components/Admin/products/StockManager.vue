@@ -46,46 +46,97 @@
       </div>
     </div>
 
+    <!-- Add Product Button -->
+    <button @click="openAddProductForm" class="action-btn add-btn">
+      <Icon icon="material-symbols:add" class="icon" />
+      Ajouter
+    </button>
+
+
     <!-- Loading State -->
     <div v-if="loading" class="loading">Chargement des produits...</div>
-    
+
     <!-- Product List -->
     <div v-else>
-        <div 
-            v-if="filteredProducts.length > 0"
-            v-for="product in filteredProducts" 
-            :key="product._id" 
-            class="product-item"
-        >
-            <img :src="product.product_image_url" alt="Product" class="product-img" />
-            <div class="info">
-                <h3>{{ product.product_name }}</h3>
-                <label>
-                    Stock:
-                    <input 
-                      type="number" 
-                      v-model.number="product.stock" 
-                      min="0" 
-                      class="stock-input"
-                    />
-                </label>
-                <button @click="updateStock(product)" class="update-btn">
-                    Mettre à jour
-                </button>
-            </div>
-        </div>
-        <div v-else class="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <h3>Aucun produit trouvé</h3>
-            <p>Vos critères de recherche ne correspondent à aucun produit.</p>
-            <button @click="resetFilters" class="reset-btn">
-                Réinitialiser les filtres
+      <div 
+          v-if="filteredProducts.length > 0"
+          v-for="product in filteredProducts" 
+          :key="product._id" 
+          class="product-item"
+      >
+
+        <img :src="product.product_image_url" alt="Product" class="product-img" />
+        <div class="info">
+            <h3>{{ product.product_name }}</h3>
+            <label>
+                Stock:
+                <input 
+                  type="number" 
+                  v-model.number="product.stock" 
+                  min="0" 
+                  class="stock-input"
+                />
+            </label>
+            <button @click="updateStock(product)" class="update-btn">
+                Mettre à jour
             </button>
         </div>
+        <button @click="deleteProduct(product._id)" class="action-btn delete-btn">
+          <Icon icon="material-symbols:delete-outline" class="icon" />
+          Supprimer
+        </button>
+        <button @click="editProduct(product)" class="action-btn edit-btn">
+          <Icon icon="material-symbols:edit-outline" class="icon" />
+          Modifier
+        </button>
+      </div>
+      <div v-else class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>Aucun produit trouvé</h3>
+          <p>Vos critères de recherche ne correspondent à aucun produit.</p>
+          <button @click="resetFilters" class="reset-btn">
+              Réinitialiser les filtres
+          </button>
+      </div>
+    </div>
+    <div v-if="showProductForm" class="modal-overlay" @click.self="showProductForm = false">
+      <div class="modal">
+        <button @click="showProductForm = false" class="close-btn">×</button>
+        <ProductForm
+          :product="currentProduct"
+          :currentProduct="currentProduct" 
+          :categories="categories"
+          :subcategories="subcategories"
+          :subsubcategories="subsubcategories"
+          @saved="onProductSaved"
+          @cancel="showProductForm = false"
+        />
+      </div>
+    </div>
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
+      <div class="delete-modal">
+        <button @click="showDeleteModal = false" class="close-btn">×</button>
+        
+        <div class="modal-content">
+          <Icon icon="mdi:alert-circle-outline" class="warning-icon" />
+          <h3>Confirmer la suppression</h3>
+          <p>Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.</p>
+          
+          <div class="modal-actions">
+            <button @click="showDeleteModal = false" class="cancel-btn">
+              Annuler
+            </button>
+            <button @click="confirmDelete" class="confirm-delete-btn">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -94,17 +145,29 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/api'
 import { useToast } from 'vue-toastification'
+import ProductForm from './ProductForm.vue'
+import { Icon } from '@iconify/vue';
+
 
 const toast = useToast()
+
 const products = ref([])
 const categories = ref([])
 const subcategories = ref([])
 const subsubcategories = ref([])
+
 const selectedCategory = ref('')
 const selectedSubcategory = ref('')
 const selectedSubSubcategory = ref('')
+
 const loading = ref(true)
 const searchQuery = ref('')
+
+const showProductForm = ref(false)
+const currentProduct = ref(null) // null for new product, product object for editing
+
+const showDeleteModal = ref(false)
+const productToDelete = ref(null)
 
 onMounted(async () => {
   try {
@@ -112,14 +175,13 @@ onMounted(async () => {
       api.getAllProducts(),
       api.getCategories(),
       api.getAllSubcategories(),
-      api.getAllSubSubcategories() // Add this API call
+      api.getAllSubSubcategories()
     ])
-    
+
     products.value = productsRes.data
     categories.value = categoriesRes.data
     subcategories.value = subcategoriesRes.data
     subsubcategories.value = subsubcategoriesRes.data || []
-
   } catch (err) {
     console.error('Error loading data:', err)
     toast.error('Erreur lors du chargement des produits')
@@ -128,29 +190,25 @@ onMounted(async () => {
   }
 })
 
-// Filter products based on search query and selected category/subcategory
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const matchesSearch = p.product_name.toLowerCase().includes(searchQuery.value.toLowerCase())
     const productCategoryId = p.category_id?._id || p.category_id
     const productSubcategoryId = p.subcategory_id?._id || p.subcategory_id
     const productSubSubcategoryId = p.subsubcategory_id?._id || p.subsubcategory_id
-    
+
     const matchesCategory = !selectedCategory.value || 
                           String(productCategoryId) === String(selectedCategory.value)
-    
     const matchesSubcategory = !selectedSubcategory.value || 
                              String(productSubcategoryId) === String(selectedSubcategory.value)
-    
     const matchesSubSubcategory = !selectedSubSubcategory.value || 
                                 (productSubSubcategoryId && 
                                  String(productSubSubcategoryId) === String(selectedSubSubcategory.value))
-    
+
     return matchesSearch && matchesCategory && matchesSubcategory && matchesSubSubcategory
   })
 })
 
-// Filter subcategories based on selected category
 const filteredSubcategories = computed(() => {
   if (!selectedCategory.value) return []
   return subcategories.value.filter(sc => 
@@ -158,13 +216,54 @@ const filteredSubcategories = computed(() => {
   )
 })
 
-// Filter sub-subcategories based on selected subcategory
 const filteredSubSubcategories = computed(() => {
   if (!selectedSubcategory.value) return []
   return subsubcategories.value.filter(ssc => 
     String(ssc.subcategory_id?._id || ssc.subcategory_id) === String(selectedSubcategory.value)
   )
 })
+
+const openAddProductForm = () => {
+  currentProduct.value = null
+  showProductForm.value = true
+}
+
+const editProduct = (product) => {
+  currentProduct.value = JSON.parse(JSON.stringify(product))
+  showProductForm.value = true
+}
+
+const deleteProduct = (productId) => {
+  productToDelete.value = productId
+  showDeleteModal.value = true
+}
+
+const confirmDelete = async () => {
+  try {
+    await api.deleteProduct(productToDelete.value)
+    products.value = products.value.filter(p => p._id !== productToDelete.value)
+    toast.success('Produit supprimé avec succès')
+  } catch (err) {
+    console.error('Erreur lors de la suppression du produit:', err)
+    toast.error('Erreur lors de la suppression du produit')
+  } finally {
+    showDeleteModal.value = false
+    productToDelete.value = null
+  }
+}
+
+const onProductSaved = async () => {
+  showProductForm.value = false
+  loading.value = true
+  try {
+    const res = await api.getAllProducts()
+    products.value = res.data
+  } catch (err) {
+    toast.error("Erreur lors de l'actualisation des produits")
+  } finally {
+    loading.value = false
+  }
+}
 
 const updateStock = async (product) => {
   try {
@@ -191,7 +290,6 @@ watch(selectedCategory, () => {
 watch(selectedSubcategory, () => {
   selectedSubSubcategory.value = ''
 })
-
 </script>
 
 <style scoped>
@@ -271,7 +369,7 @@ watch(selectedSubcategory, () => {
   align-items: center;
   gap: 1.5rem;
   border-bottom: 1px solid #eee;
-  padding: 1.5rem 0;
+  padding: 0.6rem 1rem 1.5rem 1.5rem;
   transition: background-color 0.3s;
 }
 
@@ -382,6 +480,153 @@ watch(selectedSubcategory, () => {
   background-color: #258e7d;
 }
 
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 9000;
+  max-width: 100%;
+  width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+/* delete edit btns */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 100px;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #e9ecef;
+  color: #2c3e50;
+}
+
+.action-btn .icon {
+  font-size: 1.2rem;
+}
+
+.add-btn {
+  background-color: #2f8f9d;
+  color: white;
+}
+
+.add-btn:hover {
+  background-color: #258e7d;
+}
+
+.edit-btn {
+  background-color: #f0f3f5;
+  color: #2c3e50;
+}
+
+.edit-btn:hover {
+  background-color: #dbe3e6;
+}
+
+.delete-btn {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.delete-btn:hover {
+  background-color: #f1b0b7;
+}
+
+/* Delete Modal Styles */
+.delete-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  max-width: 90%;
+  width: 450px;
+  text-align: center;
+}
+
+.warning-icon {
+  font-size: 3rem;
+  color: #FF5252;
+  margin-bottom: 1rem;
+}
+
+.modal-content h3 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.modal-content p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.cancel-btn {
+  background: #f1f1f1;
+  color: #333;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.confirm-delete-btn {
+  background: #FF5252;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.confirm-delete-btn:hover {
+  background: #ff3333;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .stock-manager {
@@ -441,6 +686,21 @@ watch(selectedSubcategory, () => {
   
   .update-btn {
     margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  /* delete modal */
+  .delete-modal {
+    width: 90%;
+    padding: 1.5rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .cancel-btn,
+  .confirm-delete-btn {
     width: 100%;
   }
 }

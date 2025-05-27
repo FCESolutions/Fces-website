@@ -72,9 +72,7 @@ const product = computed(() => cartStore.currentProduct)
 const formData = ref({
   name: '',
   email: '',
-  phone: '',
-  address: '',
-  notes: ''
+  phone: ''
 })
 
 const validateForm = () => {

@@ -9,7 +9,6 @@ const descriptionItemSchema = new Schema({
 
 const externalLinkSchema = new Schema({
   label: { type: String },
-  text: { type: String },
   url: { type: String },
   type: { type: String, enum: ['certificate', 'external_resource'] }
 });
@@ -32,7 +31,7 @@ const productSchema = new Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  price: { type: String },
+  marque: { type: String },
   product_image_url: { type: String },
   external_links: [externalLinkSchema],
   product_files: [productFileSchema],

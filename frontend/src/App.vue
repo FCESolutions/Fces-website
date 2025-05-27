@@ -16,8 +16,8 @@ const router = useRouter()
 
 onMounted(() => {
   window.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'F') {
-      router.push('admin/admin-access')
+    if (e.ctrlKey && e.shiftKey && (e.key === 'F' || e.key === 'f')) {
+      router.push('/admin/admin-access')
     }
   });
 });

@@ -14,7 +14,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 
-const phoneNumber = '212611762304'
+const phoneNumber = '212702085182'
 const message = encodeURIComponent("Bonjour, je suis intéressé(e) par vos services. Pouvez-vous me fournir plus d'informations ?")
 const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`
 </script>
