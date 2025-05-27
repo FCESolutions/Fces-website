@@ -1,7 +1,7 @@
 <template>
-  <!-- <AdminLogin v-if="!isAuthenticated" @loginSuccess="handleLoginSuccess" /> -->
+  <AdminLogin v-if="!isAuthenticated" @loginSuccess="handleLoginSuccess" />
   <!-- add v-eslse when you uncomment the login -->
-  <div class="admin-dashboard">
+  <div v-else class="admin-dashboard">
     <!-- Tabs -->
     <div class="tabs">
       <button 
