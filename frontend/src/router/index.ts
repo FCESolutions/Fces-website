@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import ContactView from '@/views/ContactView.vue'
 import ServicesView from '@/views/ServicesView.vue'
@@ -6,6 +7,7 @@ import ProductsView from '@/views/ProductsView.vue'
 import OrderView from '@/views/OrderView.vue'
 import AdminView from '@/views/AdminView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
+import ThankYouNotice from '@/components/products/ThankYouNotice.vue'
 const routes = [
   {
     path: '/',
@@ -54,6 +56,11 @@ const routes = [
     component: ProjectsView
   },
   {
+    path: '/merci',
+    name: 'ThankYou',
+    component: ThankYouNotice
+  },
+  {
     path: '/',
     name: 'Contact',
     component: ContactView
@@ -61,7 +68,26 @@ const routes = [
   {
     path: '/admin/admin-access',
     name: 'Admin',
-    component: AdminView,
+    component: AdminView,    
+    beforeEnter: (
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized,
+      next: NavigationGuardNext
+    ) => {
+      const token = localStorage.getItem('adminToken')
+      // Allow access if route is exactly admin login page:
+      if (to.path === '/admin/admin-access') {
+        return next();
+      }
+
+      // Otherwise, if path includes /admin and no token, block access
+      if (to.path.includes('/admin') && !token) {
+        return next('/login'); // or your chosen fallback route
+      }
+
+      // Otherwise, proceed normally
+      next();
+    },
     meta: { requiresAuth: true }
   }
 ]

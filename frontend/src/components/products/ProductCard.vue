@@ -9,10 +9,11 @@
   >
     <div class="image-container">
       <img 
-        :src="product.product_image_url" 
+        :src="imageSrc" 
         :alt="product.product_name"
         class="product-image"
         loading="lazy"
+        @error="handleImageError"
       >
     </div>
     <div class="product-content">
@@ -31,6 +32,8 @@
 <script setup>
 import { useCartStore } from '@/stores/cartStore'
 import { useRouter, useRoute } from 'vue-router'
+import { ref, computed } from 'vue'
+import api from '@/api'
 
 const props = defineProps({
   product: {
@@ -43,12 +46,33 @@ const emit = defineEmits(['navigate'])
 const cartStore = useCartStore()
 const router = useRouter()
 const route = useRoute()
+const imageLoading = ref(true)
+
+// Computed property to handle both URL and GridFS images
+const imageSrc = computed(() => {
+  if (props.product.product_image_file?.fileId) {
+    return api.getImageUrl(props.product.product_image_file.fileId)
+  }
+  return props.product.product_image_url
+})
+
+const handleImageError = (e) => {
+  const img = e.target
+  img.alt = 'Aucune image disponible pour ce produit.'
+  img.src = ''  // Optionally set to a blank or error placeholder if needed
+  console.warn('Aucune image disponible pour le produit:', props.product.product_name)
+}
+
+const handleImageLoad = () => {
+  imageLoading.value = false
+}
 
 const handleClick = () => {
   emit('navigate', props.product)
 }
 
 const proceedToCheckout = (event) => {
+  console.log('imageSrc id', props.product.product_image_file?.fileId)
   event.stopPropagation()
   cartStore.setProductToOrder(props.product)
   router.push({ 

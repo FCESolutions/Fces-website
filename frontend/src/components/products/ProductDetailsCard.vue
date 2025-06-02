@@ -19,10 +19,11 @@
       <!-- Image Gallery -->
       <div class="product-gallery">
         <img 
-          :src="product.product_image_url" 
+          :src="imageSrc" 
           :alt="product.product_name"
           class="main-image"
           loading="lazy"
+          @error="handleImageError"
         >
         <button 
           @click.stop="proceedToCheckout" 
@@ -97,39 +98,39 @@
           </div>
         </div>
 
-        <!-- Downloads -->
-        <div class="product-downloads" v-if="product.product_files && product.product_files.length">
-          <h2 class="section-title">Documentation technique</h2>
-          <div class="download-buttons">
-            <a 
-              v-for="(file, index) in product.product_files" 
-              :key="index"
-              :href="file.url"
-              target="_blank"
-              class="download-btn"
-            >
-              <Icon icon="heroicons-outline:document-download" class="icon" />
-              {{ file.label }}
-            </a>
-          </div>
+      <!-- Downloads -->
+      <div class="product-downloads" v-if="product.product_files && product.product_files.length">
+        <h2 class="section-title">Documentation technique</h2>
+        <div class="download-buttons">
+          <a 
+            v-for="(file, index) in product.product_files" 
+            :key="index"
+            :href="getSafeUrl(file.url)"
+            target="_blank"
+            class="download-btn"
+          >
+            <Icon icon="heroicons-outline:document-download" class="icon" />
+            {{ file.label }}
+          </a>
         </div>
+      </div>
 
-        <!-- External Links -->
-        <div class="product-external-links" v-if="product.external_links && product.external_links.length">
-          <h2 class="section-title">Liens externes</h2>
-          <div class="external-link-buttons">
-            <a 
-              v-for="(link, index) in product.external_links" 
-              :key="index"
-              :href="link.url"
-              target="_blank"
-              class="external-link-btn"
-            >
-              <Icon icon="heroicons-outline:link" class="icon" />
-              {{ link.label }}
-            </a>
-          </div>
+      <!-- External Links -->
+      <div class="product-external-links" v-if="product.external_links && product.external_links.length">
+        <h2 class="section-title">Liens externes</h2>
+        <div class="external-link-buttons">
+          <a 
+            v-for="(link, index) in product.external_links" 
+            :key="index"
+            :href="getSafeUrl(link.url)"
+            target="_blank"
+            class="external-link-btn"
+          >
+            <Icon icon="heroicons-outline:link" class="icon" />
+            {{ link.label }}
+          </a>
         </div>
+      </div>
 
       </div>
     </div>
@@ -141,6 +142,9 @@ import { Icon } from '@iconify/vue'
 import { useProductStore } from '@/stores/productStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useRouter, useRoute } from 'vue-router'
+import { computed } from 'vue'
+import api from '@/api'
+import { fullUrl } from '@/utils/url'
 
 const props = defineProps({
   product: {
@@ -152,11 +156,38 @@ const cartStore = useCartStore()
 const router = useRouter()
 const route = useRoute()
 
+// Image handling
+const imageSrc = computed(() => {
+  if (props.product.product_image_file?.fileId) {
+    return api.getImageUrl(props.product.product_image_file.fileId)
+  }
+  return props.product.product_image_url
+})
+
+const handleImageError = (e) => {
+  const img = e.target
+  img.alt = 'Aucune image disponible pour ce produit.'
+  img.src = ''  // Optionally set to a blank or error placeholder if needed
+  console.warn('Aucune image disponible pour le produit:', props.product.product_name)
+}
+
 // Get the category store instance
 const productStore = useProductStore()
 productStore.setActiveCategory(props.product.category_id)
 productStore.setActiveSubcategory(props.product.subcategory_id)
 productStore.setActiveSubsubcategory(props.product.subsubcategory_id)
+
+const getSafeUrl = (url) => {
+  console.log('Original URL:', url);
+
+  const result = url.startsWith('http://') || url.startsWith('https://') 
+    ? url 
+    : fullUrl(url);
+
+  console.log('Final Safe URL:', result);
+
+  return result;
+}
 
 const proceedToCheckout = (event) => {
   event.stopPropagation()

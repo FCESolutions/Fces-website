@@ -3,7 +3,6 @@ const router = express.Router();
 const multer = require('multer');
 
 const {
-    getAllProjects,
     createNewProject,
     updateProject,
     updateProjectStatus,
@@ -11,14 +10,15 @@ const {
     uploadImgs,
     updateImgDesc,
     deleteImg,
-    getImgsFromGridFS
+    getProjectImg
 } = require('../../controllers/projectsController');
+
+const {
+    getProductImage
+} = require('../../controllers/productController');
 
 // Define multer inline
 const upload = multer({ storage: multer.memoryStorage() });
-
-// get all projects
-router.get('/', getAllProjects);
 
 // create new project
 router.post('/', createNewProject);
@@ -42,6 +42,6 @@ router.put('/:projectId/images/:imageId', updateImgDesc);
 router.delete('/:projectId/images/:imageId', deleteImg);
 
 // get images from gridfs
-router.get('/images/:id', getImgsFromGridFS);
+router.get('/images/:id', getProjectImg);
 
 module.exports = router;

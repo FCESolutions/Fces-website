@@ -16,7 +16,9 @@
       <WhatsapButton class="whatsapp-btn" />
     </div>
 
-
+    <div v-if="isAdmin" class="admin-logout-btn">
+      <button @click="logout">Déconnexion</button>
+    </div>
 
     <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
       <span :class="['hamburger-line', { 'line-1-open': isMenuOpen }]"></span>
@@ -28,15 +30,24 @@
 
 <script setup>
 import logoImg from '../assets/logo.jpg'
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAdminStore } from '@/stores/admin'
 
 import WhatsapButton from './WhatsappButton.vue'
 
 const router = useRouter()
+const adminStore = useAdminStore()
 
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
+
+const isAdmin = computed(() => adminStore.isAuthenticated)
+
+function logout() {
+  adminStore.logout()
+  router.push('/')
+}
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
@@ -199,6 +210,21 @@ onBeforeUnmount(() => {
 
 .line-3-open {
   transform: rotate(-45deg) translate(6px, -6px);
+}
+
+.admin-logout-btn button {
+  background: none;
+  border: none;
+  color: #2F8F9D;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.admin-logout-btn button:hover {
+  color: #007ba7; /* Slightly darker blue on hover */
 }
 
 /* Responsive Styles */

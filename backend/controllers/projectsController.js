@@ -5,20 +5,11 @@ const Project = require('../models/Project');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const { GridFSBucket } = require('mongodb');
-//const { connectToGridFS } = require('../config/gridfs');
 const { getGFSBucket } = require('../config/gridfs');
-
-//const upload = multer({ storage: multer.memoryStorage() });
+const GridFSController = require('../controllers/gridfsController');
+const gridFS = new GridFSController();
 
 const crypto = require('crypto');
-
-// Connect to GridFS
-/*
-let gfs;
-connectToGridFS().then((gridFS) => {
-  gfs = gridFS;
-});
-*/
 
 // Get all projects
 exports.getAllProjects = async (req, res) => {
@@ -118,8 +109,6 @@ exports.uploadImgs = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    const bucket = getGFSBucket();
-
     const uploadedImages = [];
     const skippedImages = [];
 
@@ -133,23 +122,14 @@ exports.uploadImgs = async (req, res) => {
         continue;
       }
 
-      const uploadStream = bucket.openUploadStream(file.originalname, {
-        contentType: file.mimetype,
-      });
-
-      uploadStream.end(file.buffer);
-
-      await new Promise((resolve, reject) => {
-        uploadStream.on('finish', resolve);
-        uploadStream.on('error', reject);
-      });
+      const uploadedFile = await gridFS.uploadFile(file, { generateHash: true });
 
       uploadedImages.push({
-        filename: file.originalname,
-        contentType: file.mimetype,
-        size: file.size,
-        imageId: uploadStream.id,
-        hash,
+        filename: uploadedFile.filename,
+        contentType: uploadedFile.contentType,
+        size: uploadedFile.size,
+        imageId: uploadedFile.fileId,
+        hash: uploadedFile.hash,
       });
     }
 
@@ -216,12 +196,8 @@ exports.deleteImg = async (req, res) => {
       return res.status(404).json({ message: 'Image not found' });
     }
     
-    // Delete from GridFS
-    const bucket = new GridFSBucket(mongoose.connection.db, {
-      bucketName: 'uploads'
-    });
-    
-    await bucket.delete(new mongoose.Types.ObjectId(req.params.imageId));
+    // Delete from GridFS using the controller
+    await gridFS.deleteFile(req.params.imageId);
     
     // Remove from project
     project.images.splice(imageIndex, 1);
@@ -233,40 +209,12 @@ exports.deleteImg = async (req, res) => {
   }
 };
 
-// Serve images from GridFS
 // Serve images from GridFS with proper headers
-exports.getImgsFromGridFS = async (req, res) => {
+exports.getProjectImg = async (req, res) => {
   try {
-    const bucket = new GridFSBucket(mongoose.connection.db, {
-      bucketName: 'uploads'
+    await gridFS.streamFile(req.params.id, res, {
+      cacheControl: 'public, max-age=31536000' // 1 year cache
     });
-    
-    const fileId = new mongoose.Types.ObjectId(req.params.id);
-    
-    // First find the file metadata to get content type
-    const files = await bucket.find({ _id: fileId }).toArray();
-    if (!files || files.length === 0) {
-      return res.status(404).json({ message: 'Image not found' });
-    }
-    
-    const file = files[0];
-    
-    // Set proper headers
-    res.set('Content-Type', file.contentType);
-    res.set('Content-Length', file.length);
-    res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache
-    
-    // Enable CORS if needed
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    
-    const downloadStream = bucket.openDownloadStream(fileId);
-    
-    downloadStream.on('error', () => {
-      res.status(404).json({ message: 'Image not found' });
-    });
-    
-    downloadStream.pipe(res);
   } catch (err) {
     console.error('Error serving image:', err);
     res.status(500).json({ message: err.message });

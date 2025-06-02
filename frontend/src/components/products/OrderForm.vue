@@ -97,6 +97,8 @@ const submitOrder = async () => {
   if (!validateForm() || !product.value) return
   isSubmitting.value = true
 
+  console.log('product image file:', product.value.product_image_file)
+
   try {
     const orderData = {
       customer: {
@@ -108,7 +110,8 @@ const submitOrder = async () => {
         {
           productId: product.value._id,
           productName: product.value.product_name,
-          productImage: product.value.product_image_url || null
+          productImage: product.value.product_image_url || null,
+          productImageFile: product.value.product_image_file || null
         }
       ],
       status: 'En attente',
@@ -117,9 +120,8 @@ const submitOrder = async () => {
     console.log('Order Data:', orderData)
     await api.submitOrder(orderData)
 
-    toast.success('Votre commande a été placée avec succès !')
     cartStore.clear()
-    router.push({ name: 'Home' })
+    router.push({ name: 'ThankYou' })
   } catch (error) {
     console.error('Error submitting order:', error)
     toast.error('Une erreur est survenue lors de la commande. Veuillez réessayer')
@@ -241,7 +243,6 @@ textarea {
   font-size: 14px;
 }
 
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -254,6 +255,13 @@ textarea {
 }
 
 @media (max-width: 700px) {
+  .order-form-container {
+    width: 100%;
+    max-width: none; 
+    margin: 10px 2px;
+    padding: 12px;
+  }
+
   .order-form {
     grid-template-columns: 1fr;
   }
@@ -266,9 +274,19 @@ textarea {
     grid-column: span 1;
   }
 
-  .order-form-container {
-    padding: 25px 15px;
+  h2 {
+    font-size: 22px;
+  }
+
+  input,
+  textarea {
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .submit-btn {
+    padding: 16px 20px;
+    font-size: 17px;
   }
 }
 </style>
-

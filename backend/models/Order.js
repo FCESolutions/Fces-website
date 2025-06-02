@@ -10,7 +10,13 @@ const orderItemSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  productImage: String // Optional: Store image URL for reference
+  productImage: String, // Optional: Store image URL for reference
+  productImageFile: {
+    fileId: mongoose.Schema.Types.ObjectId,
+    filename: String,
+    mimetype: String,
+    size: Number
+  }
 }, { _id: false });
 
 const customerSchema = new mongoose.Schema({

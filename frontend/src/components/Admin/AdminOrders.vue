@@ -92,9 +92,10 @@
 
         <div class="order-product">
           <img
-            :src="order.items[0].productImage"
+            :src="getProductImageSrc(order.items[0])"
             :alt="order.items[0].productName"
             class="product-image"
+            @error="handleImageError"
           >
           <p class="product-name">{{ order.items[0].productName }}</p>
         </div>
@@ -166,6 +167,8 @@ const confirmedOrder = ref(null)
 const toastMessage = ref('')
 const toastClass = ref('')
 
+console.log('props.orders:', props.orders.value);
+
 
 const orderStatusOptions = [
   'En attente',
@@ -217,6 +220,23 @@ const formatOrderClass = (status) => {
     case 'Annulé': return 'status-cancelled'
     default: return ''
   }
+}
+
+const getProductImageSrc = (item) => {
+  let url = '';
+  if (item.productImageFile?.fileId) {
+    url = api.getImageUrl(item.productImageFile.fileId);
+  } else {
+    url = item.productImage || '';
+  }
+  console.log('Image URL:', url);
+  return url;
+}
+
+const handleImageError = (e) => {
+  const img = e.target
+  img.alt = 'Aucune image disponible pour ce produit.'
+  img.src = ''
 }
 
 // Open confirmation modal
@@ -290,7 +310,6 @@ const printOrder = (order) => {
 
 </script>
 
-
 <style scoped>
 .orders-container {
   padding: 2rem;
@@ -305,7 +324,14 @@ const printOrder = (order) => {
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+
+  /* Sticky styles */
+  position: sticky;
+  top: 145px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 
 .header-content {
   display: flex;

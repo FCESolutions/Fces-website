@@ -78,7 +78,7 @@ const fetchProjects = async () => {
 
 // Construct image URL from imageId
 const getImageUrl = (imageId) => {
-  return `http://localhost:4000/api/admin/projects/images/${imageId}`
+  return `http://localhost:4000/api/images/${imageId}`;
 }
 
 // Lifecycle

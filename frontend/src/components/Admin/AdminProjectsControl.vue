@@ -228,8 +228,8 @@ const handleImageUpload = async (event, projectId) => {
 
 // Get image URL from GridFS
 const getImageUrl = (imageId) => {
-    console.log('Loading image with ID:', imageId);
-    return `http://localhost:4000/api/admin/projects/images/${imageId}`
+  const token = localStorage.getItem('token'); // or however you store it
+  return `http://localhost:4000/api/images/${imageId}`;
 };
 
 const handleImageError = (event) => {
@@ -293,7 +293,7 @@ onMounted(() => {
 
 <style scoped>
 .admin-projects {
-  padding: 2rem;
+  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
   font-family: 'Inter', sans-serif;
@@ -301,10 +301,17 @@ onMounted(() => {
 }
 
 .admin-header {
+  position: sticky;
+  top: 145px;
+  background: white;
+  padding: 1rem;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+  z-index: 10;
+  margin-bottom: 1rem;
 }
 
 .add-project-btn {
@@ -319,6 +326,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   transition: background-color 0.3s;
+  white-space: nowrap;
 }
 
 .add-project-btn:hover {
@@ -327,7 +335,7 @@ onMounted(() => {
 
 .projects-list {
   display: grid;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 .project-card {
@@ -335,7 +343,7 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -349,13 +357,20 @@ onMounted(() => {
 .project-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1rem;
+  gap: 0.5rem;
 }
 
 .project-card-header h3 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   margin: 0;
+  word-break: break-word;
+}
+
+.project-actions {
+  display: flex;
+  gap: 0.25rem;
 }
 
 .project-actions button {
@@ -363,7 +378,6 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   font-size: 1.1rem;
-  margin-left: 0.5rem;
   padding: 0.4rem;
   border-radius: 5px;
   transition: background-color 0.2s;
@@ -396,13 +410,14 @@ onMounted(() => {
   background: #f5f5f5;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   box-shadow: 0 0 2px rgba(0,0,0,0.1);
+  white-space: nowrap;
 }
 
 .project-images {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -417,12 +432,11 @@ onMounted(() => {
 
 .image-item img {
   width: 100%;
-  height: 260px;
+  height: 180px;
   object-fit: cover;
   display: block;
 }
 
-/* Description input outside the image */
 .image-desc-input {
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -431,29 +445,6 @@ onMounted(() => {
   border-radius: 6px;
   margin-bottom: 1rem;
   box-sizing: border-box;
-}
-
-.image-actions {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.25rem 0.5rem;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  backdrop-filter: blur(4px);
-  transition: background 0.3s ease;
-}
-
-.image-actions input {
-  flex: 1;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.85rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
 }
 
 .remove-img-btn {
@@ -473,10 +464,6 @@ onMounted(() => {
   background-color: #c0392b;
 }
 
-.image-item:hover .image-actions {
-  background: rgba(255, 255, 255, 0.95);
-}
-
 .add-images {
   margin-top: 1rem;
 }
@@ -494,6 +481,7 @@ onMounted(() => {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.3s;
+  text-align: center;
 }
 
 .upload-label:hover {
@@ -509,6 +497,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem;
 }
 
 .modal-content {
@@ -516,7 +505,7 @@ onMounted(() => {
   border-radius: 10px;
   width: 100%;
   max-width: 480px;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -561,11 +550,12 @@ onMounted(() => {
 }
 
 .form-group input[type="text"] {
-  width: 95%;
+  width: 100%;
   padding: 0.65rem;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 0.95rem;
+  box-sizing: border-box;
 }
 
 .form-actions,
@@ -574,6 +564,7 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .save-btn,
@@ -586,6 +577,8 @@ onMounted(() => {
   cursor: pointer;
   font-size: 0.95rem;
   transition: background-color 0.3s;
+  flex: 1;
+  min-width: 120px;
 }
 
 .cancel-btn {
@@ -597,6 +590,8 @@ onMounted(() => {
   cursor: pointer;
   font-size: 0.95rem;
   transition: background-color 0.2s;
+  flex: 1;
+  min-width: 120px;
 }
 
 .save-btn:hover,
@@ -611,14 +606,69 @@ onMounted(() => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .admin-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    position: sticky;
+    top: 140px;
+    padding: 1rem 0;
   }
-
+  
+  .project-card {
+    padding: 1rem;
+    min-height: auto;
+  }
+  
   .project-images {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .image-item img {
+    height: 140px;
+  }
+  
+  .status-toggle {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    margin: 0;
+  }
+  
+  .modal-content {
+    padding: 1.25rem;
+  }
+  
+  .form-actions,
+  .confirm-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .save-btn,
+  .confirm-btn,
+  .cancel-btn {
+    width: 100%;
   }
 }
 
+@media (max-width: 480px) {
+  .admin-projects {
+    padding: 0.5rem;
+  }
+  
+  .project-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .project-actions {
+    align-self: flex-end;
+  }
+  
+  .project-images {
+    grid-template-columns: 1fr;
+  }
+  
+  .image-item img {
+    height: 200px;
+  }
+}
 </style>

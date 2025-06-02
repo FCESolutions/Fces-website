@@ -1,6 +1,9 @@
 const Subcategory = require('../models/Subcategory');
+const SubSubcategory = require('../models/Subsubcategory');
 const Category = require('../models/Category');
 const Product = require('../models/Product');
+const GridFSController = require('./gridfsController');
+const gridfs = new GridFSController();
 
 // Get all subcategories
 exports.getAllSubcategories = async (req, res) => {
@@ -54,6 +57,10 @@ exports.getSubcategoryById = async (req, res) => {
 // Create new subcategory
 exports.createSubcategory = async (req, res) => {
   try {
+    if (!req.body.subcategory_image_url) {
+      return res.status(400).json({ message: 'Image URL is required' });
+    }
+
     const category = await Category.findById(req.body.category_id);
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
@@ -63,7 +70,7 @@ exports.createSubcategory = async (req, res) => {
       subcategory_name: req.body.subcategory_name,
       category_id: req.body.category_id,
       category_name: category.category_name,
-      subcategory_image_url: req.body.image_url
+      subcategory_image_url: req.body.subcategory_image_url
     });
 
     const newSubcategory = await subcategory.save();
@@ -76,29 +83,69 @@ exports.createSubcategory = async (req, res) => {
 // Update subcategory
 exports.updateSubcategory = async (req, res) => {
   try {
+    const { subcategory_name, ...otherFields } = req.body;
+
     const updatedSubcategory = await Subcategory.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { subcategory_name, ...otherFields },
       { new: true }
     );
+
     if (!updatedSubcategory) {
       return res.status(404).json({ message: 'Subcategory not found' });
     }
+
+    // Update sub-subcategories
+    await SubSubcategory.updateMany(
+      { subcategory_id: req.params.id },
+      { $set: { subcategory_name } }
+    );
+
+    // Update products
+    await Product.updateMany(
+      { subcategory_id: req.params.id },
+      { $set: { subcategory_name } }
+    );
+
     res.json(updatedSubcategory);
   } catch (err) {
+    console.error('Subcategory update error:', err);
     res.status(400).json({ message: err.message });
   }
 };
 
 // Delete subcategory
 exports.deleteSubcategory = async (req, res) => {
+  const session = await Subcategory.startSession();
+  session.startTransaction();
   try {
-    const subcategory = await Subcategory.findByIdAndDelete(req.params.id);
-    if (!subcategory) {
+    const subcategoryId = req.params.id;
+
+    const subsubcategories = await SubSubcategory.find({ subcategory_id: subcategoryId }).session(session);
+    const subsubcategoryIds = subsubcategories.map(subsub => subsub._id);
+
+    await Product.deleteMany({
+      $or: [
+        { subcategory_id: subcategoryId },
+        { subsubcategory_id: { $in: subsubcategoryIds } }
+      ]
+    }).session(session);
+
+    await SubSubcategory.deleteMany({ _id: { $in: subsubcategoryIds } }).session(session);
+
+    const deletedSubcategory = await Subcategory.findByIdAndDelete(subcategoryId).session(session);
+    if (!deletedSubcategory) {
+      await session.abortTransaction();
       return res.status(404).json({ message: 'Subcategory not found' });
     }
-    res.json({ message: 'Subcategory deleted successfully' });
+
+    await session.commitTransaction();
+    res.json({ message: 'Subcategory and related data deleted successfully.' });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    await session.abortTransaction();
+    console.error('Error deleting subcategory and related data:', err);
+    res.status(500).json({ message: 'Error deleting subcategory and related data.', error: err.message });
+  } finally {
+    session.endSession();
   }
 };

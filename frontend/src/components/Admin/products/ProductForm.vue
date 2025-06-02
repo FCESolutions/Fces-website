@@ -11,14 +11,18 @@
     <div class="form-section">
       <label>
         Catégorie <span class="required">*</span>
-        <div class="select-with-add">
+        <div class="select-with-actions">
           <select v-model="formData.category_id" required>
             <option value="">Sélectionner une catégorie</option>
             <option v-for="cat in categories" :key="cat._id" :value="cat._id">
               {{ cat.category_name || cat.name }}
             </option>
           </select>
-          <button type="button" @click="showAddCategory = true" class="add-option-btn">+</button>
+          <div class="action-buttons">
+            <button type="button" @click="showAddCategory = true" class="action-btn add" title="Ajouter">
+              <Icon icon="mdi:plus" />
+            </button>
+          </div>
         </div>
         <span v-if="errors.category_id" class="error-message">{{ errors.category_id }}</span>
       </label>
@@ -28,21 +32,24 @@
     <div class="form-section" v-if="formData.category_id">
       <label>
         Sous-catégorie <span class="optional">(optionnel)</span>
-        <div class="select-with-add">
+        <div class="select-with-actions">
           <select v-model="formData.subcategory_id">
             <option value="">Sélectionner une sous-catégorie</option>
             <option v-for="sub in filteredSubcategories" :key="sub._id" :value="sub._id">
               {{ sub.subcategory_name || sub.name }}
             </option>
           </select>
-          <button 
-            type="button" 
-            @click="showAddSubcategory = true" 
-            class="add-option-btn"
-            :disabled="!formData.category_id"
-          >
-            +
-          </button>
+          <div class="action-buttons">
+            <button 
+              type="button" 
+              @click="showAddSubcategory = true" 
+              class="action-btn add"
+              :disabled="!formData.category_id"
+              title="Ajouter"
+            >
+              <Icon icon="mdi:plus" />
+            </button>
+          </div>
         </div>
         <p v-if="filteredSubcategories.length === 0">Aucune sous-catégorie trouvée. Ajoutez-en une avec le bouton +.</p>
       </label>
@@ -52,26 +59,28 @@
     <div class="form-section" v-if="formData.subcategory_id">
       <label>
         Sous-sous-catégorie <span class="optional">(optionnel)</span>
-        <div class="select-with-add">
+        <div class="select-with-actions">
           <select v-model="formData.subsubcategory_id">
             <option value="">Sélectionner une sous-sous-catégorie</option>
             <option v-for="ssc in filteredSubSubcategories" :key="ssc._id" :value="ssc._id">
               {{ ssc.subsubcategory_name || ssc.name }}
             </option>
           </select>
-          <button 
-            type="button" 
-            @click="showAddSubSubcategory = true" 
-            class="add-option-btn"
-            :disabled="!formData.subcategory_id"
-          >
-            +
-          </button>
+          <div class="action-buttons">
+            <button 
+              type="button" 
+              @click="showAddSubSubcategory = true" 
+              class="action-btn add"
+              :disabled="!formData.subcategory_id"
+              title="Ajouter"
+            >
+              <Icon icon="mdi:plus" />
+            </button>
+          </div>
         </div>
         <p v-if="filteredSubSubcategories.length === 0">Aucune sous-sous-catégorie trouvée. Ajoutez-en une avec le bouton +.</p>
       </label>
     </div>
-
 
     <!-- Product name -->
     <div class="form-section">
@@ -94,94 +103,141 @@
     <!-- Product image -->
     <div class="form-section">
       <label>
-        Image URL <span class="required">*</span>
-        <input 
-          v-model="formData.product_image_url" 
-          required 
-          placeholder="URL de l'image"
-          :class="{ 'error': errors.product_image_url }"
-        />
-        <div v-if="formData.product_image_url" class="image-preview">
-          <!-- Add error handling for image loading -->
-          <img 
-            :src="cleanImageUrl(formData.product_image_url)" 
-            alt="Product preview" 
-            @error="handleImageError"
-          />
+        Image <span class="required">*</span>
+        <div class="image-source-tabs">
+          <button 
+            @click="imageSource = 'url'" 
+            :class="{ 'active': imageSource === 'url' }"
+          >
+            URL
+          </button>
+          <button 
+            @click="imageSource = 'upload'" 
+            :class="{ 'active': imageSource === 'upload' }"
+          >
+            Upload
+          </button>
         </div>
-        <span v-if="errors.product_image_url" class="error-message">{{ errors.product_image_url }}</span>
+
+        <!-- URL Input -->
+        <div v-if="imageSource === 'url'" class="image-url-section">
+          <input 
+            v-model="formData.product_image_url" 
+            placeholder="URL de l'image"
+            :class="{ 'error': errors.product_image_url }"
+            @input="clearFileUpload()"
+          />
+          <div v-if="formData.product_image_url" class="image-preview">
+            <img 
+              :src="cleanImageUrl(formData.product_image_url, formData.product_image_file, imageSource)" 
+              alt="Product preview" 
+              @error="handleImageError"
+            />
+          </div>
+          <span v-if="errors.product_image_url" class="error-message">{{ errors.product_image_url }}</span>
+        </div>
+
+        <!-- File Upload -->
+        <div v-else class="image-upload-section">
+          <input 
+            type="file" 
+            ref="fileInput"
+            accept="image/jpeg, image/png, image/gif, image/webp"
+            @change="handleFileUpload"
+            class="file-input"
+          />
+          <div v-if="uploadedImagePreview || formData.product_image_file" class="image-preview">
+            <img 
+              :src="uploadedImagePreview || cleanImageUrl('', formData.product_image_file)" 
+              alt="Uploaded preview" 
+            />
+            <button 
+              @click="removeUploadedImage" 
+              class="remove-image-btn"
+              type="button"
+            >
+              <Icon icon="mdi:trash-can-outline" />
+            </button>
+          </div>
+          <div v-if="uploadProgress > 0 && uploadProgress < 100" class="upload-progress">
+            <div class="progress-bar" :style="{ width: uploadProgress + '%' }"></div>
+          </div>
+          <span v-if="uploadError" class="error-message">{{ uploadError }}</span>
+        </div>
       </label>
     </div>
 
     <!-- Description editor -->
-    <div class="description-editor">
-      <label>
-        Description <span class="required">*</span>
-        <span v-if="errors.description" class="error-message">{{ errors.description }}</span>
-      </label>
-      <div class="desc-toolbar">
-        <button class="desc-action-btn" @click="addHeading">+ Heading</button>
-        <button class="desc-action-btn" @click="addParagraph">+ Paragraph</button>
-        <button class="desc-action-btn" @click="addBulletList">+ Bullet List</button>
-        <button class="desc-toggle-btn" @click="previewMode = !previewMode">
-          <Icon v-if="previewMode" icon="mdi:arrow-left" class="mr-1" />
-          <Icon v-else icon="mdi:eye-outline" class="mr-1" />
-          {{ previewMode ? 'Back to Edit' : 'Preview' }}
-        </button>
-      </div>
+    <div class="form-section">
+      <div class="description-editor">
+        <label>
+          Description <span class="required">*</span>
+          <span v-if="errors.description" class="error-message">{{ errors.description }}</span>
+        </label>
+        <div class="desc-toolbar">
+          <button class="desc-action-btn" @click="addHeading">+ Heading</button>
+          <button class="desc-action-btn" @click="addParagraph">+ Paragraph</button>
+          <button class="desc-action-btn" @click="addBulletList">+ Bullet List</button>
+          <button class="desc-toggle-btn" @click="previewMode = !previewMode">
+            <Icon v-if="previewMode" icon="mdi:arrow-left" class="mr-1" />
+            <Icon v-else icon="mdi:eye-outline" class="mr-1" />
+            {{ previewMode ? 'Back to Edit' : 'Preview' }}
+          </button>
+        </div>
 
-      <!-- Edit Mode -->
-      <transition name="fade">
-        <draggable
-          v-if="!previewMode"
-          v-model="formData.description"
-          handle=".handle"
-          item-key="id"
-        >
-          <template #item="{ element, index }">
-            <div class="desc-block">
-              <span class="handle"><Icon icon="mdi:drag" style="font-size: 23px" /></span>
+        <!-- Edit Mode -->
+        <transition name="fade">
+          <draggable
+            v-if="!previewMode"
+            v-model="formData.description"
+            handle=".handle"
+            item-key="id"
+          >
+            <template #item="{ element, index }">
+              <div class="desc-block">
+                <span class="handle"><Icon icon="mdi:drag" style="font-size: 23px" /></span>
 
-              <div v-if="element.type === 'heading'">
-                <input v-model="element.content" placeholder="Enter heading..." />
-              </div>
+                <div v-if="element.type === 'heading'">
+                  <input v-model="element.content" placeholder="Enter heading..." />
+                </div>
 
-              <div v-else-if="element.type === 'paragraph'">
-                <textarea v-model="element.content" placeholder="Enter paragraph..."></textarea>
-              </div>
+                <div v-else-if="element.type === 'paragraph'">
+                  <textarea v-model="element.content" placeholder="Enter paragraph..."></textarea>
+                </div>
 
-              <div v-else-if="element.type === 'bullet_list'">
-                <div
-                  v-for="(item, i) in element.items"
-                  :key="i"
-                  class="bullet-item"
-                >
-                  <input v-model="element.items[i]" placeholder="– Bullet point..." />
-                  <button @click="removeBulletItem(index, i)" class="desc-remove-btn">
-                    <Icon icon="mdi:minus" />
+                <div v-else-if="element.type === 'bullet_list'">
+                  <div
+                    v-for="(item, i) in element.items"
+                    :key="i"
+                    class="bullet-item"
+                  >
+                    <input v-model="element.items[i]" placeholder="– Bullet point..." />
+                    <button @click="removeBulletItem(index, i)" class="desc-remove-btn">
+                      <Icon icon="mdi:minus" />
+                    </button>
+                  </div>
+                  <button @click="addBulletItem(index)" class="add-btn">
+                    <Icon icon="mdi:plus" class="mr-1" /> Bullet
                   </button>
                 </div>
-                <button @click="addBulletItem(index)" class="add-btn">
-                  <Icon icon="mdi:plus" class="mr-1" /> Bullet
-                </button>
               </div>
-            </div>
-          </template>
-        </draggable>
-      </transition>
+            </template>
+          </draggable>
+        </transition>
 
-      <!-- Preview Mode -->
-      <transition name="fade">
-        <div v-if="previewMode" class="preview-container special-preview">
-          <template v-for="(element, index) in formData.description" :key="index">
-            <h4 v-if="element.type === 'heading'">{{ element.content }}</h4>
-            <p v-else-if="element.type === 'paragraph'">{{ element.content }}</p>
-            <ul v-else-if="element.type === 'bullet_list'">
-              <li v-for="(item, i) in element.items" :key="i">{{ item }}</li>
-            </ul>
-          </template>
-        </div>
-      </transition>
+        <!-- Preview Mode -->
+        <transition name="fade">
+          <div v-if="previewMode" class="preview-container special-preview">
+            <template v-for="(element, index) in formData.description" :key="index">
+              <h4 v-if="element.type === 'heading'">{{ element.content }}</h4>
+              <p v-else-if="element.type === 'paragraph'">{{ element.content }}</p>
+              <ul v-else-if="element.type === 'bullet_list'">
+                <li v-for="(item, i) in element.items" :key="i">{{ item }}</li>
+              </ul>
+            </template>
+          </div>
+        </transition>
+      </div>
     </div>
 
     <!-- External links -->
@@ -194,15 +250,12 @@
           class="link-block"
         >
           <div class="input-group">
-            <button
-              @click="removeExternalLink(index)"
-              class="link-remove-btn"
-              title="Supprimer"
-            >
+            <button @click="removeExternalLink(index)" class="link-remove-btn" title="Supprimer">
               <Icon icon="mdi:minus" />
             </button>
             <input v-model="link.label" placeholder="Label" />
-            <input v-model="link.url" placeholder="URL" />            
+            <input v-if="!link.uploaded" type="file" @change="handleExternalLinkUpload($event, index)" />
+            <input v-else v-model="link.url" placeholder="URL" readonly />
           </div>
         </div>
         <button @click="addExternalLink" class="add-btn">Ajouter un lien</button>
@@ -211,7 +264,7 @@
 
     <!-- Product files -->
     <div class="form-section">
-      <label>Fichiers produits <span class="optional">(optionnel)</span></label>
+      <label>Fichiers techniques <span class="optional">(optionnel)</span></label>
       <div class="link-blocks">
         <div
           v-for="(file, index) in formData.product_files"
@@ -219,15 +272,12 @@
           class="link-block"
         >
           <div class="input-group">
-            <button
-              @click="removeProductFile(index)"
-              class="link-remove-btn"
-              title="Supprimer"
-            >
+            <button @click="removeProductFile(index)" class="link-remove-btn" title="Supprimer">
               <Icon icon="mdi:minus" />
             </button>
             <input v-model="file.label" placeholder="Label" />
-            <input v-model="file.url" placeholder="URL" />
+            <input v-if="!file.uploaded" type="file" @change="handleProductFileUpload($event, index)" />
+            <input v-else v-model="file.url" placeholder="URL" readonly />
           </div>
         </div>
         <button @click="addProductFile" class="add-btn">Ajouter un fichier</button>
@@ -237,8 +287,7 @@
     <!-- Specification Editor -->
     <div class="form-section">
       <label> 
-        Spécifications techniques <span class="required">*</span> 
-        <span v-if="errors.specifications" class="error-message">{{ errors.specifications }}</span>
+        Spécifications techniques <span class="optional">(optionnel)</span>
       </label>
       <div class="specs-editor">
         <!-- Categories list -->
@@ -315,7 +364,6 @@
       </div>
     </div>
 
-
     <!-- Stock -->
     <div class="form-section">
       <label>
@@ -338,11 +386,30 @@
         </div>
         <div class="form-section">
           <label>
-            Image URL <span class="required">*</span>
-            <input v-model="newCategory.image_url" placeholder="URL de l'image" required />
+            Image <span class="required">*</span>
+            <input 
+              type="file" 
+              accept="image/jpeg, image/png, image/gif, image/webp"
+              @change="handleCategoryImageUpload"
+              class="file-input"
+            />
+            <div v-if="newCategory.imagePreview" class="image-preview">
+              <img :src="newCategory.imagePreview" alt="Category preview" />
+              <button 
+                @click="removeCategoryImage" 
+                class="remove-image-btn"
+                type="button"
+              >
+                <Icon icon="mdi:trash-can-outline" />
+              </button>
+            </div>
           </label>
         </div>
-        <button @click="saveNewCategory" class="save-btn">Enregistrer</button>
+        <button 
+          @click="saveNewCategory" 
+          class="save-btn"
+          :disabled="!newCategory.name || !(newCategory.imageFile || newCategory.imageUrl)"
+        >Enregistrer</button>
       </div>
     </div>
 
@@ -359,11 +426,30 @@
         </div>
         <div class="form-section">
           <label>
-            Image URL <span class="required">*</span>
-            <input v-model="newSubcategory.image_url" placeholder="URL de l'image" required />
+            Image <span class="required">*</span>
+            <input 
+              type="file" 
+              accept="image/jpeg, image/png, image/gif, image/webp"
+              @change="handleSubcategoryImageUpload"
+              class="file-input"
+            />
+            <div v-if="newSubcategory.imagePreview" class="image-preview">
+              <img :src="newSubcategory.imagePreview" alt="Subcategory preview" />
+              <button 
+                @click="removeSubcategoryImage" 
+                class="remove-image-btn"
+                type="button"
+              >
+                <Icon icon="mdi:trash-can-outline" />
+              </button>
+            </div>
           </label>
         </div>
-        <button @click="saveNewSubcategory" class="save-btn">Enregistrer</button>
+        <button 
+          @click="saveNewSubcategory" 
+          class="save-btn"
+          :disabled="!newSubcategory.name || !(newSubcategory.imageFile || newSubcategory.imageUrl)"
+        >Enregistrer</button>
       </div>
     </div>
 
@@ -380,13 +466,33 @@
         </div>
         <div class="form-section">
           <label>
-            Image URL <span class="required">*</span>
-            <input v-model="newSubSubcategory.image_url" placeholder="URL de l'image" required />
+            Image <span class="required">*</span>
+            <input 
+              type="file" 
+              accept="image/jpeg, image/png, image/gif, image/webp"
+              @change="handleSubSubcategoryImageUpload"
+              class="file-input"
+            />
+            <div v-if="newSubSubcategory.imagePreview" class="image-preview">
+              <img :src="newSubSubcategory.imagePreview" alt="Subsubcategory preview" />
+              <button 
+                @click="removeSubSubcategoryImage" 
+                class="remove-image-btn"
+                type="button"
+              >
+                <Icon icon="mdi:trash-can-outline" />
+              </button>
+            </div>
           </label>
         </div>
-        <button @click="saveNewSubSubcategory" class="save-btn">Enregistrer</button>
+        <button 
+          @click="saveNewSubSubcategory" 
+          class="save-btn"
+          :disabled="!newSubSubcategory.name || !(newSubSubcategory.imageFile || newSubSubcategory.imageUrl)"
+        >Enregistrer</button>
       </div>
     </div>
+
 
     <!-- Form actions -->
     <div class="form-actions">
@@ -423,6 +529,7 @@ const defaultProduct = {
   subsubcategory_id: '',
   marque: '',
   product_image_url: '',
+  product_image_file: null,
   description: [],
   external_links: [],
   product_files: [],
@@ -445,11 +552,18 @@ const formData = ref(
       }
 )
 
-// Specification methods
+// Specification vars
 const newCategoryName = ref('')
 const newSpecKey = reactive({})
 const newModelKey = reactive({})
 const newModelValue = reactive({})
+
+// img vars
+const imageSource = ref('url') // or 'upload'
+const uploadedImagePreview = ref(null)
+const uploadProgress = ref(0)
+const uploadError = ref(null)
+const fileInput = ref(null)
 
 // Add this to your script setup
 const errors = reactive({
@@ -520,18 +634,21 @@ const showAddSubSubcategory = ref(false)
 
 const newCategory = ref({
   name: '',
-  image_url: ''
+  imageFile: null,
+  imagePreview: null
 })
 
 const newSubcategory = ref({
   name: '',
-  image_url: '',
+  imageFile: null,
+  imagePreview: null,
   category_id: ''
 })
 
 const newSubSubcategory = ref({
   name: '',
-  image_url: '',
+  imageFile: null,
+  imagePreview: null,
   subcategory_id: ''
 })
 
@@ -573,20 +690,69 @@ const specEntries = computed(() =>
 )
 
 // img methods
-const cleanImageUrl = (url) => {
-  if (!url) return url
-  
-  try {
-    const urlObj = new URL(url)
-    // Remove file extensions from pathname
-    const path = urlObj.pathname.replace(/\.(jpg|jpeg|png|gif|webp|svg)$/i, '')
-    urlObj.pathname = path
-    return urlObj.toString()
-  } catch {
-    // If URL parsing fails, just return the original
-    return url
+// handleFileUpload now just stores the file and preview, no upload here
+const handleFileUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Clear URL field when uploading a file
+  formData.value.product_image_url = ''
+
+  // Validate file type and size as before
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  if (!validTypes.includes(file.type)) {
+    uploadError.value = 'Invalid file type. Please upload an image (JPEG, PNG, GIF, WEBP).'
+    return
   }
+  if (file.size > 5 * 1024 * 1024) {
+    uploadError.value = 'File size too large. Maximum 5MB allowed.'
+    return
+  }
+
+  // Just store file info & preview
+  formData.value.product_image_file = file
+  uploadedImagePreview.value = URL.createObjectURL(file)
+
+  // Clear previous upload state/errors
+  uploadError.value = null
+  uploadProgress.value = 0
 }
+
+const removeUploadedImage = () => {
+  formData.value.product_image_file = null
+  uploadedImagePreview.value = null
+  if (fileInput.value) fileInput.value.value = ''
+  uploadError.value = null
+}
+
+const clearFileUpload = () => {
+  formData.value.product_image_file = null
+  uploadedImagePreview.value = null
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+const cleanImageUrl = (url, fileInfo, source) => {
+  // If using uploaded image
+  if (source === 'upload' && fileInfo?.fileId) {
+    return api.getImageUrl(fileInfo.fileId);
+  }
+
+  // If using URL
+  if (source === 'url' && url) {
+    try {
+      const urlObj = new URL(url);
+      // Remove file extensions (optional cleanup)
+      const path = urlObj.pathname.replace(/\.(jpg|jpeg|png|gif|webp|svg)$/i, '');
+      urlObj.pathname = path;
+      return urlObj.toString();
+    } catch {
+      return url;
+    }
+  }
+
+  return '';
+};
+
 
 const handleImageError = (e) => {
   const img = e.target
@@ -643,6 +809,26 @@ const removeBulletItem = (descIndex, itemIndex) => {
 }
 
 // External links methods
+const handleExternalLinkUpload = async (event, index) => {
+  const file = event.target.files[0]
+  if (!file) return
+  const formDataUpload = new FormData()
+  formDataUpload.append('file', file)
+
+  try {
+    const res = await api.uploadFile(formDataUpload)
+    formData.value.external_links[index].url = res.data.url
+    formData.value.external_links[index].uploaded = true
+  } catch (err) {
+    console.error('External link upload failed:', err)
+  }
+}
+
+const removeExternalLink = (index) => {
+  formData.value.external_links.splice(index, 1)
+}
+
+// External links methods
 const addExternalLink = () => {
   formData.value.external_links.push({
     label: '',
@@ -651,8 +837,20 @@ const addExternalLink = () => {
   })
 }
 
-const removeExternalLink = (index) => {
-  formData.value.external_links.splice(index, 1)
+// Product files methods
+const handleProductFileUpload = async (event, index) => {
+  const file = event.target.files[0]
+  if (!file) return
+  const formDataUpload = new FormData()
+  formDataUpload.append('file', file)
+
+  try {
+    const res = await api.uploadFile(formDataUpload)
+    formData.value.product_files[index].url = res.data.url
+    formData.value.product_files[index].uploaded = true
+  } catch (err) {
+    console.error('Product file upload failed:', err)
+  }
 }
 
 // Product files methods
@@ -757,72 +955,176 @@ const transformedSpecifications = computed(() => {
   return result
 })
 
-// Save new category
+// cats subcats, subsubcats
+const validateAndPreviewImage = (event, targetRef, label = 'Fichier') => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  const maxSize = 5 * 1024 * 1024 // 5MB
+
+  if (!validTypes.includes(file.type)) {
+    toast.error(`${label} invalide. Veuillez télécharger une image (JPEG, PNG, GIF, WEBP).`)
+    return
+  }
+
+  if (file.size > maxSize) {
+    toast.error(`${label} trop grand. Maximum 5MB autorisé.`)
+    return
+  }
+
+  targetRef.value.imageFile = file
+  targetRef.value.imagePreview = URL.createObjectURL(file)
+}
+
+const handleCategoryImageUpload = (e) => validateAndPreviewImage(e, newCategory, 'Image de catégorie')
+const handleSubcategoryImageUpload = (e) => validateAndPreviewImage(e, newSubcategory, 'Image de sous-catégorie')
+const handleSubSubcategoryImageUpload = (e) => validateAndPreviewImage(e, newSubSubcategory, 'Image de sous-sous-catégorie')
+
+const uploadImage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await api.uploadImage(formData, {
+      onUploadProgress: (progressEvent) => {
+        // Update progress if needed
+      }
+    });
+    
+    return {
+      url: api.getImageUrl(response.data.fileInfo.fileId),
+      fileInfo: response.data.fileInfo
+    };
+  } catch (error) {
+    console.error('Image upload failed:', error);
+    throw error;
+  }
+};
+
 const saveNewCategory = async () => {
   try {
-    const res = await api.createCategory({
+    let imageUrl = '';
+    
+    // Upload image if new file was selected
+    if (newCategory.value.imageFile) {
+      const uploadResult = await uploadImage(newCategory.value.imageFile);
+      imageUrl = uploadResult.url;
+    } else if (!newCategory.value.imageUrl) {
+      throw new Error('Image is required');
+    }
+
+    const categoryData = {
       category_name: newCategory.value.name,
-      image_url: newCategory.value.image_url
-    })
+      category_image_url: imageUrl || newCategory.value.imageUrl
+    };
+
+    const res = await api.createCategory(categoryData);
     
     // Add to local categories list
-    props.categories.push(res.data)
+    props.categories.push(res.data);
     
     // Select the new category
-    formData.value.category_id = res.data._id
+    formData.value.category_id = res.data._id;
     
     // Reset and close
-    newCategory.value = { name: '', image_url: '' }
-    showAddCategory.value = false
+    newCategory.value = { name: '', imageFile: null, imageUrl: '', imagePreview: '' }
+    showAddCategory.value = false;
+    toast.success('Category created successfully');
   } catch (err) {
-    console.error('Failed to create category:', err)
+    console.error('Failed to create category:', err);
+    toast.error(err.message || 'Failed to create category');
   }
-}
+};
 
-// Save new subcategory
 const saveNewSubcategory = async () => {
   try {
-    const res = await api.createSubcategory({
+    let imageUrl = '';
+    
+    if (newSubcategory.value.imageFile) {
+      const uploadResult = await uploadImage(newSubcategory.value.imageFile);
+      imageUrl = uploadResult.url;
+    } else if (!newSubcategory.value.imageUrl) {
+      throw new Error('Image is required');
+    }
+
+    if (!formData.value.category_id) {
+      throw new Error('Aucune catégorie sélectionnée');
+    }
+
+    const subcategoryData = {
       subcategory_name: newSubcategory.value.name,
-      image_url: newSubcategory.value.image_url,
-      category_id: formData.value.category_id
-    })
+      category_id: formData.value.category_id,
+      subcategory_image_url: imageUrl || newSubcategory.value.imageUrl
+    };
+
+    const res = await api.createSubcategory(subcategoryData);
     
     // Add to local subcategories list
-    props.subcategories.push(res.data)
+    props.subcategories.push(res.data);
     
     // Select the new subcategory
-    formData.value.subcategory_id = res.data._id
+    formData.value.subcategory_id = res.data._id;
     
     // Reset and close
-    newSubcategory.value = { name: '', image_url: '', category_id: '' }
-    showAddSubcategory.value = false
+    newSubcategory.value = { name: '', imageFile: null, imageUrl: '', category_id: '', imagePreview: '' };
+    showAddSubcategory.value = false;
+    toast.success('Subcategory created successfully');
   } catch (err) {
-    console.error('Failed to create subcategory:', err)
+    console.error('Failed to create subcategory:', err);
+    toast.error(err.message || 'Failed to create subcategory');
   }
-}
+};
 
-// Save new subsubcategory
 const saveNewSubSubcategory = async () => {
   try {
-    const res = await api.createSubSubcategory({
+    let imageUrl = '';
+
+    if (newSubSubcategory.value.imageFile) {
+      const uploadResult = await uploadImage(newSubSubcategory.value.imageFile);
+      imageUrl = uploadResult.url;
+    } else if (!newSubSubcategory.value.imageUrl) {
+      throw new Error('Image is required');
+    }
+
+    const subSubcategoryData = {
       subsubcategory_name: newSubSubcategory.value.name,
-      image_url: newSubSubcategory.value.image_url,
-      subcategory_id: formData.value.subcategory_id
-    })
+      subcategory_id: formData.value.subcategory_id,
+      category_id: formData.value.category_id,
+      subsubcategory_image_url: imageUrl || newSubSubcategory.value.imageUrl
+    };
+
+    const res = await api.createSubSubcategory(subSubcategoryData);
     
     // Add to local subsubcategories list
-    props.subsubcategories.push(res.data)
+    props.subsubcategories.push(res.data);
     
     // Select the new subsubcategory
-    formData.value.subsubcategory_id = res.data._id
+    formData.value.subsubcategory_id = res.data._id;
     
     // Reset and close
-    newSubSubcategory.value = { name: '', image_url: '', subcategory_id: '' }
-    showAddSubSubcategory.value = false
+    newSubSubcategory.value = { name: '', imageFile: null, imageUrl: '', subcategory_id: '', imagePreview: '' };
+    showAddSubSubcategory.value = false;
+    toast.success('Subsubcategory created successfully');
   } catch (err) {
-    console.error('Failed to create subsubcategory:', err)
+    console.error('Failed to create subsubcategory:', err);
+    toast.error(err.message || 'Failed to create subsubcategory');
   }
+};
+// Image removal handlers
+const removeCategoryImage = () => {
+  newCategory.value.imageFile = null
+  newCategory.value.imagePreview = null
+}
+
+const removeSubcategoryImage = () => {
+  newSubcategory.value.imageFile = null
+  newSubcategory.value.imagePreview = null
+}
+
+const removeSubSubcategoryImage = () => {
+  newSubSubcategory.value.imageFile = null
+  newSubSubcategory.value.imagePreview = null
 }
 
 const validateForm = () => {
@@ -830,6 +1132,7 @@ const validateForm = () => {
   
   // Reset errors
   Object.keys(errors).forEach(key => errors[key] = null)
+  uploadError.value = null
   
   // Validate required fields
   if (!formData.value.product_name?.trim()) {
@@ -847,12 +1150,20 @@ const validateForm = () => {
     isValid = false
   }
   
-  if (!formData.value.product_image_url?.trim()) {
-    errors.product_image_url = "L'URL de l'image est requise"
-    isValid = false
-  } else if (!isValidUrl(formData.value.product_image_url)) {
-    errors.product_image_url = "L'URL de l'image n'est pas valide"
-    isValid = false
+  // Validate image - either URL or file must be provided
+  if (imageSource.value === 'url') {
+    if (!formData.value.product_image_url?.trim()) {
+      errors.product_image_url = "L'URL de l'image est requise"
+      isValid = false
+    } else if (!isValidUrl(formData.value.product_image_url)) {
+      errors.product_image_url = "L'URL de l'image n'est pas valide"
+      isValid = false
+    }
+  } else {
+    if (!formData.value.product_image_file && !uploadedImagePreview.value) {
+      uploadError.value = "Veuillez télécharger une image"
+      isValid = false
+    }
   }
   
   if (!formData.value.description?.length) {
@@ -866,10 +1177,10 @@ const validateForm = () => {
   }
   
   // Validate specifications
-  if (!formData.value.specifications?.categories?.length) {
+  /*if (!formData.value.specifications?.categories?.length) {
     errors.specifications = 'Au moins une spécification technique est requise'
     isValid = false
-  }
+  }*/
   
   return isValid
 }
@@ -888,31 +1199,57 @@ const isValidUrl = (url) => {
 }
 
 // Save product
+// Your saveProduct function — handle image upload here, then save product
 const saveProduct = async () => {
-  if (!validateForm()) {
-    toast.error('Veuillez corriger les erreurs dans le formulaire')
-    return
-  }
-
   try {
-    const cleanData = {
+    uploadError.value = null
+    uploadProgress.value = 0
+
+    // If user selected a file, upload it now
+    if (formData.value.product_image_file) {
+      const uploadFormData = new FormData()
+      uploadFormData.append('product_image', formData.value.product_image_file)
+
+      const uploadResponse = await api.uploadProductImage(uploadFormData, {
+        onUploadProgress: (progressEvent) => {
+          uploadProgress.value = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          )
+        }
+      })
+
+      // Assuming your API returns file info here
+      const fileInfo = uploadResponse.data.fileInfo
+
+      // Update formData with the file info (or URL)
+      formData.value.product_image_url = api.getImageUrl(fileInfo.fileId)
+      
+      // Clear the file since it's now uploaded
+      formData.value.product_image_file = null
+      uploadProgress.value = 100
+    }
+
+    // Prepare product data to save
+    const productPayload = {
       ...formData.value,
-      product_image_url: cleanImageUrl(formData.value.product_image_url), // Clean the URL
       specifications: transformedSpecifications.value
     }
 
-    if (props.product) {
-      await api.updateProduct(props.product._id, cleanData)
-      toast.success('Produit mis à jour avec succès')
+    // Call your API to save the product (create or update)
+    let response
+    if (props.product && props.product._id) {
+      response = await api.updateProduct(props.product._id, productPayload)
     } else {
-      await api.createProduct(cleanData)
-      toast.success('Produit créé avec succès')
+      response = await api.createProduct(productPayload)
     }
-    
-    emit('saved')
-  } catch (err) {
-    console.error('Failed to save product:', err)
-    toast.error(`Échec de ${props.product ? 'la mise à jour' : 'la création'} du produit`)
+
+    toast.success('Product saved successfully!')
+    emit('saved', response.data)
+  } catch (error) {
+    console.error('Failed to save product:', error)
+    uploadError.value = 'Failed to save product. Please try again.'
+  } finally {
+    uploadProgress.value = 0
   }
 }
 </script>
@@ -994,12 +1331,14 @@ textarea {
 }
 
 /* cat, subcat, subsubcat input forms*/
-.select-with-add {
+.select-with-actions {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 4px;
 }
 
-.select-with-add select {
+.select-with-actions select {
+  flex: 1;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -1007,11 +1346,17 @@ textarea {
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 1em;
-  padding-right: 2.5rem; /* Make space for the icon */
+  padding-right: 2.5rem; /* space for icon */
 }
 
-.add-option-btn {
-  padding: 0.4rem 0.6rem;
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* ADD BUTTON: keep original green filled style */
+.action-btn.add {
+  padding: 0.4rem 0.2rem;
   margin-left: 0px;
   margin-bottom: 6px;
   background: transparent;
@@ -1025,16 +1370,55 @@ textarea {
   transition: color 0.2s, border-color 0.2s, transform 0.1s;
 }
 
-.add-option-btn:hover {
+.action-btn.add:hover {
   color: #2563eb;
   transform: translateY(-1px);
 }
 
-.add-option-btn:disabled {
+.action-btn.add:disabled {
   color: #94a3b8;
   cursor: not-allowed;
   transform: none;
 }
+
+/* Add this to your styles */
+.modal .image-preview {
+  margin-top: 10px;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.modal .image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal .remove-image-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modal .file-input {
+  margin-top: 5px;
+}
+
+/* EDIT & DELETE BUTTONS: transparent background, colored icons/text, subtle hover */
 
 .description-editor,
 .external-links,
@@ -1046,9 +1430,81 @@ textarea {
   background: white;
 }
 
+/* Image Upload Styles */
+.image-source-tabs {
+  display: flex;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.image-source-tabs button {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.image-source-tabs button.active {
+  color: #1e40af;
+  border-bottom-color: #1e40af;
+}
+
+.image-source-tabs button:hover:not(.active) {
+  color: #334155;
+}
+
+.file-input {
+  width: 95%;
+  padding: 0.5rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(239, 68, 68, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.remove-image-btn:hover {
+  background: #ef4444;
+  transform: scale(1.1);
+}
+
+.upload-progress {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+
 .image-preview {
   position: relative;
   margin-top: 0.5rem;
+  display: inline-block;
 }
 
 .image-preview img {
@@ -1613,6 +2069,22 @@ textarea {
   .add-option-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .image-source-tabs {
+    flex-direction: column;
+    border-bottom: none;
+  }
+  
+  .image-source-tabs button {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    text-align: left;
+  }
+  
+  .image-source-tabs button.active {
+    border-left-color: #1e40af;
+    border-bottom: none;
   }
 
   /* Spec Editor Mobile Styles */

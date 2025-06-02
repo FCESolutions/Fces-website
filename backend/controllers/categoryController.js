@@ -2,6 +2,8 @@ const Category = require('../models/Category');
 const Subsubcategory = require('../models/Subsubcategory');
 const Subcategory = require('../models/Subcategory');
 const Product = require('../models/Product');
+const GridFSController = require('./gridfsController');
+const gridfs = new GridFSController();
 
 // Get all categories
 exports.getAllCategories = async (req, res) => {
@@ -107,12 +109,16 @@ exports.searchItem = async (req, res) => {
 
 // Create new category
 exports.createCategory = async (req, res) => {
-  const category = new Category({
-    category_name: req.body.category_name,
-    category_image_url: req.body.image_url
-  });
-
   try {
+    if (!req.body.category_image_url) {
+      return res.status(400).json({ message: 'Image URL is required' });
+    }
+
+    const category = new Category({
+      category_name: req.body.category_name,
+      category_image_url: req.body.category_image_url
+    });
+
     const newCategory = await category.save();
     res.status(201).json(newCategory);
   } catch (err) {
@@ -123,29 +129,84 @@ exports.createCategory = async (req, res) => {
 // Update category
 exports.updateCategory = async (req, res) => {
   try {
+    const { category_name, category_image_url } = req.body;
+
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { category_name, category_image_url },
       { new: true }
     );
+
     if (!updatedCategory) {
       return res.status(404).json({ message: 'Category not found' });
     }
+
+    // Update subcategories
+    await Subcategory.updateMany(
+      { category_id: req.params.id },
+      { $set: { category_name } }
+    );
+
+    // Update sub-subcategories
+    await Subsubcategory.updateMany(
+      { category_id: req.params.id },
+      { $set: { category_name } }
+    );
+
+    // Update products
+    await Product.updateMany(
+      { category_id: req.params.id },
+      { $set: { category_name } }
+    );
+
     res.json(updatedCategory);
   } catch (err) {
+    console.error('Update failed:', err);
     res.status(400).json({ message: err.message });
   }
 };
 
 // Delete category
 exports.deleteCategory = async (req, res) => {
+  const session = await Category.startSession();
+  session.startTransaction();
   try {
-    const category = await Category.findByIdAndDelete(req.params.id);
-    if (!category) {
+    const categoryId = req.params.id;
+
+    // Step 1: Find subcategories
+    const subcategories = await Subcategory.find({ category_id: categoryId }).session(session);
+    const subcategoryIds = subcategories.map(sub => sub._id);
+
+    // Step 2: Find subsubcategories
+    const subsubcategories = await Subsubcategory.find({ subcategory_id: { $in: subcategoryIds } }).session(session);
+    const subsubcategoryIds = subsubcategories.map(subsub => subsub._id);
+
+    // Step 3: Delete products
+    await Product.deleteMany({
+      $or: [
+        { category_id: categoryId },
+        { subcategory_id: { $in: subcategoryIds } },
+        { subsubcategory_id: { $in: subsubcategoryIds } }
+      ]
+    }).session(session);
+
+    // Step 4: Delete subsubcategories and subcategories
+    await Subsubcategory.deleteMany({ _id: { $in: subsubcategoryIds } }).session(session);
+    await Subcategory.deleteMany({ _id: { $in: subcategoryIds } }).session(session);
+
+    // Step 5: Delete category
+    const deletedCategory = await Category.findByIdAndDelete(categoryId).session(session);
+    if (!deletedCategory) {
+      await session.abortTransaction();
       return res.status(404).json({ message: 'Category not found' });
     }
-    res.json({ message: 'Category deleted successfully' });
+
+    await session.commitTransaction();
+    res.json({ message: 'Category and all related data deleted successfully.' });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    await session.abortTransaction();
+    res.status(500).json({ message: 'Error deleting category and related data.', error: err.message });
+  } finally {
+    session.endSession();
   }
 };

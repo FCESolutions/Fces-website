@@ -2,6 +2,10 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const Subcategory = require('../models/Subcategory');
 const Subsubcategory = require('../models/Subsubcategory');
+const crypto = require('crypto');
+const mongoose = require('mongoose');
+const GridFSController = require('./gridfsController');
+const gridFS = new GridFSController();
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
@@ -103,6 +107,7 @@ exports.createProduct = async (req, res) => {
       specifications,
       marque,
       product_image_url,
+      product_image_file,
       external_links,
       product_files,
       stock,
@@ -134,6 +139,18 @@ exports.createProduct = async (req, res) => {
       }
     }
 
+        // Handle file upload if present
+    if (req.file) {
+      product_image_file = {
+        fileId: req.file.id,
+        filename: req.file.filename,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      };
+      // Clear URL if file is uploaded
+      product_image_url = '';
+    }
+
     // Create product
     const product = new Product({
       product_name: product_name,
@@ -147,6 +164,7 @@ exports.createProduct = async (req, res) => {
       specifications,
       marque,
       product_image_url,
+      product_image_file,
       external_links,
       product_files,
       stock,
@@ -161,12 +179,47 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-
 // Update product
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
+
+    const existingProduct = await Product.findById(id);
+      if (!existingProduct) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+    // Handle file upload if present
+    if (req.file) {
+      // Delete previous file if it exists
+      if (existingProduct.product_image_file?.fileId) {
+        await gridFS.deleteFile(existingProduct.product_image_file.fileId);
+      }
+
+      updateData.product_image_file = {
+        fileId: req.file.id,
+        filename: req.file.filename,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      };
+      // Clear URL if file is uploaded
+      updateData.product_image_url = '';
+    }
+
+    // If switching from uploaded file to a URL, delete the previous uploaded file
+    if (
+      updateData.product_image_url &&
+      !req.file &&
+      existingProduct.product_image_file?.fileId
+    ) {
+      try {
+        await gridFS.deleteFile(existingProduct.product_image_file.fileId);
+        updateData.product_image_file = null;
+      } catch (err) {
+        console.error('Failed to delete previous uploaded file:', err.message);
+      }
+    }
 
     // Validate the specifications structure if present
     if (updateData.specifications) {
@@ -204,11 +257,14 @@ exports.updateProduct = async (req, res) => {
   } catch (err) {
     // More specific error handling
     if (err.name === 'CastError') {
+      console.error('Invalid product ID:', err.value);
       return res.status(400).json({ message: 'Invalid product ID format' });
     }
     if (err.name === 'ValidationError') {
+      console.error('Validation error:', err.message);
       return res.status(400).json({ message: err.message });
     }
+    console.error('Error updating product:', err);
     res.status(500).json({ 
       message: 'Error updating product',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
@@ -219,10 +275,17 @@ exports.updateProduct = async (req, res) => {
 // Delete product
 exports.deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+
+    // Delete associated image file if it exists
+    if (product.product_image_file?.fileId) {
+      await gridFS.deleteFile(product.product_image_file.fileId);
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -240,5 +303,38 @@ exports.updateProductStock = async (req, res) => {
     res.send(updated);
   } catch (error) {
     res.status(400).send({ error: 'Erreur de mise à jour du stock' });
+  }
+};
+
+exports.uploadProductImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const uploadedFile = await gridFS.uploadFile(req.file);
+
+    res.status(200).json({
+      message: 'File uploaded successfully',
+      fileInfo: {
+        fileId: uploadedFile.fileId,
+        filename: uploadedFile.filename,
+        mimetype: uploadedFile.contentType,
+        size: uploadedFile.size
+      }
+    });
+  } catch (err) {
+    console.error('Error uploading file:', err);
+    res.status(500).json({ message: 'File upload failed', error: err.message });
+  }
+};
+
+exports.getProductImage = async (req, res) => {
+  try {
+    await gridFS.streamFile(req.params.id, res, {
+      cacheControl: 'public, max-age=31536000'
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

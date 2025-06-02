@@ -25,29 +25,33 @@
 <script setup>
 import { ref, defineEmits } from 'vue'
 import api from '@/api'
+import { useAdminStore } from '@/stores/admin'
 
 const emit = defineEmits(['loginSuccess'])
+const adminStore = useAdminStore()
 const password = ref('')
 const error = ref('')
 const success = ref(false)
-const showPassword = ref(false)
 
 const handleLogin = async () => {
-  error.value = '' 
+  error.value = ''
   success.value = false
-
   try {
     const res = await api.checkAdmin(password.value)
-    emit('loginSuccess', res.data)
+    const token = res.data.token
+
+    adminStore.login(token)
+
+    // Emit event to parent with token
+    emit('loginSuccess', { token })
 
     success.value = true
-    setTimeout(() => {
-      success.value = false
-    }, 2000)
+    setTimeout(() => (success.value = false), 2000)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Mot de passe incorrect ou erreur lors de la récupération des commandes.'  
+    error.value = err?.response?.data?.message || 'Mot de passe incorrect ou erreur.'
   }
 }
+
 </script>
 
 

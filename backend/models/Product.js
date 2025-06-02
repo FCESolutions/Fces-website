@@ -33,6 +33,12 @@ const productSchema = new Schema({
   },
   marque: { type: String },
   product_image_url: { type: String },
+  product_image_file: {
+    fileId: mongoose.Schema.Types.ObjectId,
+    filename: String,
+    mimetype: String,
+    size: Number
+  },
   external_links: [externalLinkSchema],
   product_files: [productFileSchema],
   stock: { type: Number, required: true, default: 0},
