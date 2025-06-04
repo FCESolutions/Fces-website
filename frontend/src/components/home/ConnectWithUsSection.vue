@@ -19,7 +19,8 @@
           <p>Disponible du lundi au vendredi, de 8h à 17h.</p>
           <p class="contact-detail">0702-085182</p>
         </div>
-      </a>
+      </a>     
+
 
       <!-- Location Card (optional: could link to Google Maps) -->
       <a href="https://maps.app.goo.gl/6CijUZ3pxZ8vH4kN7" target="_blank" rel="noopener" class="card-link">

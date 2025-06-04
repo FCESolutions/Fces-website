@@ -485,9 +485,13 @@ const proceedToCheckout = (event) => {
   }
 
   .add-to-cart-btn {
-    max-width: 100%; /* Full width on mobile */
-    padding: 1rem; /* More touch-friendly */
-    font-size: 1.05rem; /* Slightly larger text */
+    max-width: 100%;
+    padding: 1rem;
+    font-size: 1.05rem;
+    white-space: normal; /* Allow text to wrap on mobile */
+    flex-wrap: wrap; /* Allow the span to wrap properly */
+    justify-content: center;
+    text-align: center;
   }
   
   .product-title {
@@ -515,6 +519,13 @@ const proceedToCheckout = (event) => {
   .add-to-cart-btn {
     padding: 0.9rem;
     font-size: 0.95rem;
+    line-height: 1.4; /* Better line spacing for wrapped text */
+  }
+  
+  .add-to-cart-btn span {
+    display: inline-block; /* Make the span behave better when wrapped */
+    width: 100%; /* Force it to take full width when it wraps */
+    text-align: center;
   }
   
   .product-meta {

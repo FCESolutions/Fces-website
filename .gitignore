@@ -4,6 +4,10 @@
 **/.env.local
 **/.env.*.local
 **/dist/           # Ignores ALL dist folders (Vue.js build output)
+
+# --- Backend ---
+backend/uploads/  # Ignores ALL uploads (uploaded files)
+
 # Environment files
 .env
 

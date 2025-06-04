@@ -1,7 +1,6 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const slugify = require('slugify');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -12,11 +11,10 @@ const storage = multer.diskStorage({
     cb(null, dir);
   },
   filename: (req, file, cb) => {
+    // Temporary filename before hashing (will rename later)
     const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext);
-    const safeBase = slugify(base, { lower: true, strict: true }); // remove accents and special chars
-    const timestamp = Date.now();
-    cb(null, `${timestamp}-${safeBase}${ext}`);
+    const tempName = `${Date.now()}-temp${ext}`;
+    cb(null, tempName);
   }
 });
 

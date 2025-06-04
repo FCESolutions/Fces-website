@@ -6,6 +6,8 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const GridFSController = require('./gridfsController');
 const gridFS = new GridFSController();
+const path = require('path');
+const fs = require('fs');
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
@@ -280,15 +282,52 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Delete associated image file if it exists
-    if (product.product_image_file?.fileId) {
-      await gridFS.deleteFile(product.product_image_file.fileId);
+    const urlsToCheck = [];
+
+    // Gather file URLs from both product_files and external_links (if any)
+    if (Array.isArray(product.product_files)) {
+      product.product_files.forEach(f => {
+        if (f.url) urlsToCheck.push(f.url);
+      });
     }
 
+    if (Array.isArray(product.external_links)) {
+      product.external_links.forEach(l => {
+        if (l.url && l.url.startsWith('/uploads/')) {
+          urlsToCheck.push(l.url);
+        }
+      });
+    }
+
+    // Delete the product from the DB first
     await Product.findByIdAndDelete(req.params.id);
+
+    // For each file URL, check if it's used elsewhere
+    for (const url of urlsToCheck) {
+      const filename = path.basename(url);
+      const filePath = path.join(__dirname, '../uploads', filename);
+
+      // Search for any other product using the same file
+      const stillUsed = await Product.findOne({
+        $or: [
+          { 'product_files.url': url },
+          { 'external_links.url': url }
+        ]
+      });
+
+      if (!stillUsed && fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ Deleted file: ${filename}`);
+      } else {
+        console.log(`📎 Skipped deleting ${filename}: still used or not found`);
+      }
+    }
+
     res.json({ message: 'Product deleted successfully' });
+
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('❌ Error deleting product:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
