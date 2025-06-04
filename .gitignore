@@ -34,3 +34,5 @@ node_modules/
 **/.cache/         # Build caches (like Vite)
 **/coverage/       # Test coverage reports
 **/temp/           # Temporary files
+
+Docs.md
