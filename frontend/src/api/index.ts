@@ -97,7 +97,7 @@ export default {
     return api.post('/admin/upload-image', data, config)
   },
   getImageUrl(fileId: string): string {
-    return `http://localhost:4000/api/images/${fileId}`
+    return `${process.env.VUE_APP_API_BASE_URL}/api/images/${fileId}`;
   },
 
   // ===================== Product Search & Sidebar =====================

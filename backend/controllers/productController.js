@@ -359,7 +359,8 @@ exports.uploadProductImage = async (req, res) => {
         fileId: uploadedFile.fileId,
         filename: uploadedFile.filename,
         mimetype: uploadedFile.contentType,
-        size: uploadedFile.size
+        size: uploadedFile.size,
+        url: `/images/${uploadedFile.fileId}`
       }
     });
   } catch (err) {
